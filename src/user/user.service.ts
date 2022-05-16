@@ -1,7 +1,12 @@
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
@@ -25,53 +30,97 @@ export class UserService {
     });
 
     if (userId == '' || userId == undefined || userId == null) {
-      return {
-        errorMessage: '아이디를 입력하세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '아이디를 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (!userPwReg.test(userId)) {
-      return {
-        errorMessage: '아이디는 4~15자 영문 및 숫자만 가능합니다.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '아이디는 4~15자 영문 및 숫자만 가능합니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (email == '' || email == undefined || email == null) {
-      return {
-        errorMessage: '이메일을 입력하세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '이메일을 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (!emailReg.test(email)) {
-      return {
-        errorMessage: '이메일 형식을 올바르게 입력해주세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '이메일 형식을 올바르게 입력해주세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (userNick == '' || userNick == undefined || userNick == null) {
-      return {
-        errorMessage: '닉네임을 입력하세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '닉네임을 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (!userNickReg.test(userNick)) {
-      return {
-        errorMessage: '닉네임은 2~15자, 한글,영문 및 숫자만 가능합니다.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '닉네임은 2~15자, 한글,영문 및 숫자만 가능합니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (existUsers.length) {
-      return {
-        errorMessage: '이미 가입된 아이디,닉네임 또는 이메일 입니다.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '이미 가입된 아이디,닉네임 또는 이메일 입니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (userPw == '' || userPw == undefined || userPw == null) {
-      return {
-        errorMessage: '비밀번호를 입력하세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '비밀번호를 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (
       userPwCheck == '' ||
       userPwCheck == undefined ||
       userPwCheck == null
     ) {
-      return {
-        errorMessage: '비밀번호 확인란을 입력하세요.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '비밀번호 확인란을 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (!userPwReg.test(userPw)) {
-      return {
-        errorMessage: '4~15자, 영문 및 숫자만 가능합니다.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '4~15자, 영문 및 숫자만 가능합니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else if (userPw !== userPwCheck) {
-      return {
-        errorMessage: '비밀번호가 비밀번호 확인란과 일치하지 않습니다.',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '비밀번호가 비밀번호 확인란과 일치하지 않습니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // bcrypt module -> 암호화
@@ -115,9 +164,6 @@ export class UserService {
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
     // console.log('webtoken-->',token)
 
-    return {
-      token,
-      userId,
-    };
+    return { token, userId };
   }
 }
