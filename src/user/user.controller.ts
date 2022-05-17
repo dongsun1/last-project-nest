@@ -1,3 +1,4 @@
+import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
 import { FriendAddDto } from './dto/friendAdd-user';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -40,5 +41,10 @@ export class UserController {
   @Post('findPw')
   async findPw(@Body() findPw: FindPwDto) {
     return await this.userService.findPw(findPw);
+  }
+
+  @Post('changePw')
+  async changePw(@Body() changePw: ChangePwDto) {
+    return await this.userService.changePw(changePw);
   }
 }

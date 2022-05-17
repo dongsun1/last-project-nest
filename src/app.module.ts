@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
+import { SocialModule } from './social/social.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { ConfigModule } from '@nestjs/config';
       useUnifiedTopology: true,
     }),
     UserModule,
+    SocialModule,
   ],
   controllers: [AppController],
   providers: [],

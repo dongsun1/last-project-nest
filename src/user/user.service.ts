@@ -1,3 +1,4 @@
+import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
 import { FriendAddDto } from './dto/friendAdd-user';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -310,5 +311,38 @@ export class UserService {
     );
     console.log('ChangeUser-->', changePw);
     return '임시 비밀번호가 생성되었습니다.';
+  }
+
+  async changePw(changePw: ChangePwDto) {
+    const { userId, email, password, newPw, newPwCheck } = changePw;
+    console.log(userId, email, password, newPw, newPwCheck);
+    const userInfo = await this.userModel.findOne({ userId });
+    const unHashPw = await bcrypt.compareSync(password, userInfo.userPw);
+
+    if (unHashPw == false) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '임시 비밀번호가 틀렸습니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (newPw !== newPwCheck) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '새 비밀번호와 새 비밀번호 확인란이 일치하지 않습니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    const hashedPw = await bcrypt.hash(newPw, 10);
+    const updatePw = await this.userModel.findOneAndUpdate(
+      { userId: userId },
+      { $set: { userPw: hashedPw } },
+      { new: true },
+    );
+    console.log('updatePw-->', updatePw);
+    return '비밀번호 변경 완료';
   }
 }
