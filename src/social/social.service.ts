@@ -10,6 +10,11 @@ const naver = {
   state: 'login',
 };
 
+const kakao = {
+  clientid: `${process.env.CLIENTID}`, //REST API
+  redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+};
+
 @Injectable()
 export class SocialService {
   constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
