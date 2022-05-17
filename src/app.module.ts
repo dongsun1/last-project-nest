@@ -1,7 +1,7 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { UsersModule } from './user/user.module';
+import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
@@ -11,7 +11,7 @@ import { ConfigModule } from '@nestjs/config';
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }),
-    UsersModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [],
