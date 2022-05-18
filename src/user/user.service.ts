@@ -1,6 +1,7 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
 import { FriendAddDto } from './dto/friendAdd-user';
+import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
@@ -15,6 +16,7 @@ import * as nodemailer from 'nodemailer';
 export class UserService {
   constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
 
+  // WebSite Register
   async register(signUpData: SignUpUserDto) {
     const { userId, email, userPw, userPwCheck, userNick } = signUpData;
     // Validation Check
@@ -28,6 +30,7 @@ export class UserService {
       $or: [{ userId }, { userNick }, { email }],
     });
 
+    // Register Validation Check
     if (userId == '' || userId == undefined || userId == null) {
       throw new HttpException(
         {
@@ -120,7 +123,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    }
+    };
 
     // bcrypt module -> 암호화
     // 10 --> saltOrRound --> salt를 10번 실행 (높을수록 강력)
@@ -144,8 +147,9 @@ export class UserService {
       userId,
       userNick,
     };
-  }
+  };
 
+  // WebSite Login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
@@ -162,30 +166,29 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    }
+    };
 
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
     // console.log('webtoken-->',token)
 
     return { token, userId };
-  }
+  };
 
   async findUser(userId: string) {
     return await this.userModel.findOne({ userId });
-  }
+  };
 
   loginCheck(user: User) {
     return {
       userId: user.userId,
       userNick: user.userNick,
     };
-  }
+  };
 
+  // Friend Add
   async friendAdd(friendUser: FriendAddDto, user: User) {
     const loginUser = user.userId;
-
     const friendUserId = friendUser.friendUserId;
-
     const searchInfo = await this.userModel.findOne({ userId: friendUserId });
 
     let msg = '';
@@ -207,11 +210,27 @@ export class UserService {
           { $push: { friendList: { userId: friendUserId } } },
         );
         msg = '친구추가 완료';
-      }
-    }
+      };
+    };
 
     return msg;
   }
+
+  // Friend Remove
+  async friendRemove(removeUser: FriendRemoveDto, user: User){
+    const loginUser = user.userId;
+    // console.log('remove login user :',loginUser)
+    const removeUserId = removeUser.removeUserId;
+    // console.log('user',removeUserId)
+    let msg = '';
+    await this.userModel.updateOne(
+        { userId: loginUser },
+        { $pull: { friendList: { userId: removeUserId } } },
+    );
+    msg = '삭제완료';
+    return msg;
+  };
+
 
   async friendList(user: User) {
     const userId = user.userId;
