@@ -1,5 +1,5 @@
 import { SocialService } from './social.service';
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Query, Redirect, Res } from '@nestjs/common';
 
 @Controller('')
 export class SocialController {
@@ -15,13 +15,17 @@ export class SocialController {
     return this.SocialService.naverLoginMain();
   }
 
+  @Redirect('https://docs.nestjs.com', 302)
   @Get('kakaoLogin')
-  kakaoLogin() {
-    return this.SocialService.kakaoLogin();
-  }
+    kakaoLogin(@Res() res:any) {
+        console.log('kakaoLogin Controller');
+        return this.SocialService.kakaoLogin();
+    }
 
   @Get('main')
-  kakaoLoginMain() {
-    return this.SocialService.kakaoLoginMain();
+  kakaoLoginMain(@Query() paginationQuery) {
+    // const { code } = paginationQuery;
+    // console.log('controller code :', code);
+    return this.SocialService.kakaoLoginMain(paginationQuery);
   }
 }
