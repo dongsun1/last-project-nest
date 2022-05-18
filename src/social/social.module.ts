@@ -5,9 +5,7 @@ import { SocialController } from './social.controller';
 import { SocialService } from './social.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])],
   controllers: [SocialController],
   providers: [SocialService],
 })

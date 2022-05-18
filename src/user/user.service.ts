@@ -13,7 +13,7 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
 
   async register(signUpData: SignUpUserDto) {
     const { userId, email, userPw, userPwCheck, userNick } = signUpData;
@@ -76,7 +76,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (existUsers.length) {
+    } else if (existUsers) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,

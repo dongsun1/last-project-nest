@@ -17,7 +17,7 @@ const kakao = {
 
 @Injectable()
 export class SocialService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
 
   naverLogin() {
     return;
