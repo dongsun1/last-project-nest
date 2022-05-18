@@ -29,6 +29,7 @@ export class UserService {
     const existUsers = await this.userModel.find({
       $or: [{ userId }, { userNick }, { email }],
     });
+    console.log('existUser :', existUsers)
 
     // Register Validation Check
     if (userId == '' || userId == undefined || userId == null) {
@@ -79,7 +80,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (existUsers) {
+    } else if (existUsers.length) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -178,6 +179,7 @@ export class UserService {
     return await this.userModel.findOne({ userId });
   };
 
+  // Login Check
   loginCheck(user: User) {
     return {
       userId: user.userId,
@@ -213,7 +215,9 @@ export class UserService {
       };
     };
 
-    return msg;
+    return {
+      msg,
+    } 
   }
 
   // Friend Remove
@@ -228,7 +232,9 @@ export class UserService {
         { $pull: { friendList: { userId: removeUserId } } },
     );
     msg = '삭제완료';
-    return msg;
+    return {
+      msg
+    }
   };
 
   // Friend List
@@ -325,19 +331,19 @@ export class UserService {
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
-    const changePw = await this.userModel.findOneAndUpdate(
+    const temporaryPw = await this.userModel.findOneAndUpdate(
       { userId: userId },
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    // console.log('ChangeUser-->', changePw);
+    console.log('temporaryPw :', temporaryPw)
     return '임시 비밀번호가 메일로 전송되었습니다.';
   };
 
   // Change Password
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
-    console.log(userId, email, password, newPw, newPwCheck);
+    // console.log(userId, email, password, newPw, newPwCheck);
     const userInfo = await this.userModel.findOne({ userId });
     const unHashPw = await bcrypt.compareSync(password, userInfo.userPw);
 
@@ -366,5 +372,5 @@ export class UserService {
     );
     console.log('updatePw-->', updatePw);
     return '비밀번호 변경 완료';
-  }
-}
+  };
+};

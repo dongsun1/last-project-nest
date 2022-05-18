@@ -3,13 +3,13 @@ import { AppController } from './app.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { SocialModule } from './social/social.module';
-import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
-    MongooseModule.forRoot(`mongodb+srv://${process.env.DB}majority`, {
+    MongooseModule.forRoot(`mongodb+srv://${process.env.DB}majority`,
+    {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     }),
@@ -17,6 +17,6 @@ import { ConfigModule } from '@nestjs/config';
     SocialModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [],
 })
 export class AppModule {}
