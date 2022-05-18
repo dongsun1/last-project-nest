@@ -20,7 +20,7 @@ export class SocialService {
   kakaoLogin() {
     const kakao = {
         clientid: `${process.env.CLIENTID}`, //REST API
-        redirectUri: 'http://localhost:3000/main',
+        redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
     };
     // console.log('kakao Clien_ID :', kakao.clientid) //undefined
     const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakao.clientid}&redirect_uri=${kakao.redirectUri}`
@@ -30,7 +30,7 @@ export class SocialService {
   async kakaoLoginMain(@Query() paginationQuery) {
     const kakao = {
         clientid: `${process.env.CLIENTID}`, //REST API
-        redirectUri: 'http://localhost:3000/main',
+        redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
     };
 
     const { code } = paginationQuery;
