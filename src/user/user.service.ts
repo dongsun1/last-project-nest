@@ -231,15 +231,16 @@ export class UserService {
     return msg;
   };
 
-
+  // Friend List
   async friendList(user: User) {
     const userId = user.userId;
     const userInfo = await this.userModel.findOne({ userId: userId });
     const friendList = userInfo.friendList;
 
     return friendList;
-  }
+  };
 
+  // Find Password
   async findPw(findPw: FindPwDto) {
     const { email, userId } = findPw;
     const userInfo = await this.userModel.findOne({ userId, email });
@@ -279,8 +280,8 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    }
-
+    };
+    // 임시 Password 생성
     const variable =
       '0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(
         ',',
@@ -291,8 +292,9 @@ export class UserService {
       for (let i = 0; i < passwordLength; i++)
         randomString += variable[Math.floor(Math.random() * variable.length)];
       return randomString;
-    }
+    };
 
+    // Nodemailer 
     const transporter = nodemailer.createTransport({
       service: 'naver',
       host: 'smtp.naver.com',
@@ -328,10 +330,11 @@ export class UserService {
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    console.log('ChangeUser-->', changePw);
-    return '임시 비밀번호가 생성되었습니다.';
-  }
+    // console.log('ChangeUser-->', changePw);
+    return '임시 비밀번호가 메일로 전송되었습니다.';
+  };
 
+  // Change Password
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
     console.log(userId, email, password, newPw, newPwCheck);
