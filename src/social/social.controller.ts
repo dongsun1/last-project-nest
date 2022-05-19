@@ -25,10 +25,10 @@ export class SocialController {
   };
 
   @Get('main')
-  kakaoLoginMain(@Query() paginationQuery) {
+  kakaoLoginMain(@Query() query:string) {
     // const { code } = paginationQuery;
 
     // console.log('controller code :', code);
-    return this.SocialService.kakaoLoginMain(paginationQuery);
+    return this.SocialService.kakaoLoginMain(query);
   };
 }
