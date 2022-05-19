@@ -5,6 +5,7 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { UserService } from './user.service';
 import { Body, Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
+import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -30,7 +31,13 @@ export class UserController {
   async friendAdd(@Body() friendUser: FriendAddDto, @Res() res: any) {
     const msg = await this.userService.friendAdd(friendUser, res.locals.user);
     res.status(HttpStatus.OK).send(msg);
-  }
+  };
+
+  @Post('friendRemove')
+    async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
+        const msg = await this.userService.friendRemove(removeUser, res.locals.user);
+        res.status(HttpStatus.OK).send(msg);
+    };
 
   @Post('friendList')
   async friendList(@Res() res: any) {

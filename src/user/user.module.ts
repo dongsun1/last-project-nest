@@ -5,7 +5,7 @@ import {
   Module,
   NestModule,
   MiddlewareConsumer,
-  RequestMethod,
+  RequestMethod
 } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
@@ -24,6 +24,8 @@ export class UserModule implements NestModule {
         { path: 'user/login', method: RequestMethod.POST },
         { path: 'user/findPw', method: RequestMethod.POST },
         { path: 'user/changePw', method: RequestMethod.POST },
+        { path: 'user/friendAdd', method: RequestMethod.POST },
+        { path: 'user/friendRemove', method: RequestMethod.POST },
       )
       .forRoutes(UserController);
   }
