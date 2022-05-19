@@ -1,5 +1,5 @@
 import { AuthMiddleware } from './../middleware/authMiddleware';
-import { User, UserSchema } from '../schemas/user/user.schema';
+import { UserSchema } from '../schemas/user/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   Module,

@@ -150,7 +150,9 @@ export class UserService {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
 
-    // body passowrd = unHashPassword -->true
+    console.log(user);
+
+    // body password = unHashPassword -->true
     const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
     console.log('unHashPw->', unHashPw); // true or false
     // userId, password 없는경우
@@ -165,7 +167,6 @@ export class UserService {
     }
 
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
-    // console.log('webtoken-->',token)
 
     return { token, userId };
   }
