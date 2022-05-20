@@ -5,22 +5,22 @@ export type VoteDocument = Vote & Document;
 
 @Schema()
 export class Vote {
-  @Prop()
+  @Prop({ required: true })
   roomId: number;
 
-  @Prop()
+  @Prop({ required: true })
   userSocketId: string;
 
-  @Prop()
+  @Prop({ required: true })
   clickerJob: string;
 
-  @Prop()
+  @Prop({ required: true })
   clickerId: string;
 
-  @Prop()
+  @Prop({ required: true })
   clickedId: string;
 
-  @Prop()
+  @Prop({ required: true })
   day: boolean;
 }
 

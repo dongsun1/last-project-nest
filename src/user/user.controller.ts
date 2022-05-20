@@ -31,13 +31,16 @@ export class UserController {
   async friendAdd(@Body() friendUser: FriendAddDto, @Res() res: any) {
     const msg = await this.userService.friendAdd(friendUser, res.locals.user);
     res.status(HttpStatus.OK).send(msg);
-  };
+  }
 
   @Post('friendRemove')
-    async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
-        const msg = await this.userService.friendRemove(removeUser, res.locals.user);
-        res.status(HttpStatus.OK).send(msg);
-    };
+  async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
+    const msg = await this.userService.friendRemove(
+      removeUser,
+      res.locals.user,
+    );
+    res.status(HttpStatus.OK).send(msg);
+  }
 
   @Post('friendList')
   async friendList(@Res() res: any) {

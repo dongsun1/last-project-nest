@@ -5,34 +5,34 @@ export type RoomDocument = Room & Document;
 
 @Schema()
 export class Room {
-  @Prop()
+  @Prop({ required: true, unique: true })
   roomId: number;
 
-  @Prop()
+  @Prop({ required: true })
   userId: string;
 
-  @Prop()
+  @Prop({ required: true })
   roomTitle: string;
 
-  @Prop()
+  @Prop({ required: true })
   roomPeople: string;
 
   @Prop()
   password: string;
 
-  @Prop()
+  @Prop([String])
   currentPeople: string[];
 
-  @Prop()
+  @Prop([String])
   currentPeopleSocketId: string[];
 
-  @Prop()
+  @Prop([String])
   currentReadyPeople: string[];
 
-  @Prop()
+  @Prop({ default: false })
   start: boolean;
 
-  @Prop()
+  @Prop({ default: false })
   night: boolean;
 }
 

@@ -1,4 +1,3 @@
-import { JobSchema } from './../schemas/game/job.schema';
 import { VoteDto } from './dto/vote.dto';
 import { CreateRoomDto } from './dto/createRoom.dto';
 import { InjectModel } from '@nestjs/mongoose';

@@ -1,15 +1,15 @@
 import { HttpStatus } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-import { MongoClient } from 'mongodb';
+// import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
 describe('UserService', () => {
   let service: UserService;
-  let connection;
-  let db;
+  // let connection;
+  // let db;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,16 +22,16 @@ describe('UserService', () => {
       ],
     }).compile();
 
-    connection = await MongoClient.connect(
-      `mongodb+srv://${process.env.DB}majority`,
-    );
-    db = await connection.db('mapiaGame');
+    // connection = await MongoClient.connect(
+    //   `mongodb+srv://${process.env.DB}majority`,
+    // );
+    // db = await connection.db('mapiaGame');
 
     service = module.get<UserService>(UserService);
   });
 
   afterAll(async () => {
-    await connection.close();
+    // await connection.close();
   });
 
   it('should be defined', () => {

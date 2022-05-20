@@ -3,12 +3,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { SocialController } from './social.controller';
 import { SocialService } from './social.service';
-import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])],
   controllers: [SocialController],
   providers: [SocialService],
 })

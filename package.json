@@ -46,6 +46,7 @@
     "socket.io": "^4.5.1"
   },
   "devDependencies": {
+    "@babel/preset-typescript": "^7.17.12",
     "@nestjs/cli": "^8.0.0",
     "@nestjs/schematics": "^8.0.0",
     "@nestjs/testing": "^8.0.0",
@@ -56,6 +57,7 @@
     "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^16.0.0",
     "@types/nodemailer": "^6.4.4",
+    "@types/request-promise": "^4.1.48",
     "@types/supertest": "^2.0.11",
     "@typescript-eslint/eslint-plugin": "^5.0.0",
     "@typescript-eslint/parser": "^5.0.0",

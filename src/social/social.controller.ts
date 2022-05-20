@@ -1,5 +1,6 @@
-import { SocialService } from './social.service';
 import { Controller, Get, Query, Redirect, Res } from '@nestjs/common';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { SocialService } from './social.service';
 
 @Controller('')
 export class SocialController {
@@ -10,19 +11,19 @@ export class SocialController {
   naverLogin() {
     console.log('naverLogin Controller');
     return this.SocialService.naverLogin();
-  };
+  }
 
   @Get('naverLogin/main')
-  naverLoginMain(@Query() query:string) {
+  naverLoginMain(@Query() query: string) {
     return this.SocialService.naverLoginMain(query);
-  };
+  }
 
   @Redirect('https://docs.nestjs.com', 302)
   @Get('kakaoLogin')
-  kakaoLogin(@Res() res:any) {
+  kakaoLogin(@Res() res: any) {
     // console.log('kakaoLogin Controller');
     return this.SocialService.kakaoLogin();
-  };
+  }
 
   @Get('main')
   kakaoLoginMain(@Query() paginationQuery) {
@@ -30,5 +31,5 @@ export class SocialController {
 
     // console.log('controller code :', code);
     return this.SocialService.kakaoLoginMain(paginationQuery);
-  };
+  }
 }
