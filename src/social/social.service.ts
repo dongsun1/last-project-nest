@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { Injectable, Query } from '@nestjs/common';
 import * as rp from 'request-promise';
 import * as jwt from 'jsonwebtoken';
+import { query } from 'express';
 
 @Injectable()
 export class SocialService {
@@ -107,14 +108,14 @@ export class SocialService {
     return { url: kakaoAuthURL };
   }
 
-  async kakaoLoginMain(@Query() paginationQuery) {
+  async kakaoLoginMain(@Query() query) {
     const kakao = {
       clientid: `${process.env.CLIENTID}`, //REST API
       redirectUri: 'http://localhost:3000/main',
       // redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
     };
 
-    const { code } = paginationQuery;
+    const { code } = query;
     console.log('service code-->', code); //undefined
     const options = {
       url: 'https://kauth.kakao.com/oauth/token',
