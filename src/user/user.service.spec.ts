@@ -1,9 +1,11 @@
 import { HttpStatus } from '@nestjs/common';
-import { getModelToken } from '@nestjs/mongoose';
+import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 // import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
+import { UserSchema } from '../schemas/user/user.schema';
 import * as dotenv from 'dotenv';
+import { ConfigModule } from '@nestjs/config';
 dotenv.config();
 
 describe('UserService', () => {
@@ -13,6 +15,10 @@ describe('UserService', () => {
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      imports: [
+        ConfigModule.forRoot(),
+        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+      ],
       providers: [
         UserService,
         {
