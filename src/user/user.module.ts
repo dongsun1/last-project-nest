@@ -1,5 +1,5 @@
 import { AuthMiddleware } from './../middleware/authMiddleware';
-import { UserSchema } from '../schemas/user/user.schema';
+import { User, UserSchema } from '../schemas/user/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   Module,
@@ -11,9 +11,7 @@ import { UserController } from './user.controller';
 import { UserService } from './user.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: 'User', schema: UserSchema }])],
   controllers: [UserController],
   providers: [UserService],
 })

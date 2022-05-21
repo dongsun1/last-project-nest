@@ -1,7 +1,6 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
 import { FriendAddDto } from './dto/friendAdd-user';
-import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
@@ -14,9 +13,8 @@ import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
 
-  // WebSite Register
   async register(signUpData: SignUpUserDto) {
     const { userId, email, userPw, userPwCheck, userNick } = signUpData;
     // Validation Check
@@ -29,9 +27,7 @@ export class UserService {
     const existUsers = await this.userModel.find({
       $or: [{ userId }, { userNick }, { email }],
     });
-    console.log('existUser :', existUsers);
 
-    // Register Validation Check
     if (userId == '' || userId == undefined || userId == null) {
       throw new HttpException(
         {
@@ -80,7 +76,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (existUsers.length) {
+    } else if (existUsers) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -150,15 +146,12 @@ export class UserService {
     };
   }
 
-  // WebSite Login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
 
-    console.log(user);
-
-    // body password = unHashPassword -->true
-    const unHashPw = bcrypt.compareSync(userPw, user.userPw);
+    // body passowrd = unHashPassword -->true
+    const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
     console.log('unHashPw->', unHashPw); // true or false
     // userId, password 없는경우
     if (user.userId !== userId || unHashPw == false) {
@@ -172,6 +165,7 @@ export class UserService {
     }
 
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
+    // console.log('webtoken-->',token)
 
     return { token, userId };
   }
@@ -187,10 +181,11 @@ export class UserService {
     };
   }
 
-  // Friend Add
   async friendAdd(friendUser: FriendAddDto, user: User) {
     const loginUser = user.userId;
+
     const friendUserId = friendUser.friendUserId;
+
     const searchInfo = await this.userModel.findOne({ userId: friendUserId });
 
     let msg = '';
@@ -215,29 +210,9 @@ export class UserService {
       }
     }
 
-    return {
-      msg,
-    };
+    return msg;
   }
 
-  // Friend Remove
-  async friendRemove(removeUser: FriendRemoveDto, user: User) {
-    const loginUser = user.userId;
-    // console.log('remove login user :',loginUser)
-    const removeUserId = removeUser.removeUserId;
-    // console.log('user',removeUserId)
-    let msg = '';
-    await this.userModel.updateOne(
-      { userId: loginUser },
-      { $pull: { friendList: { userId: removeUserId } } },
-    );
-    msg = '삭제완료';
-    return {
-      msg,
-    };
-  }
-
-  // Friend List
   async friendList(user: User) {
     const userId = user.userId;
     const userInfo = await this.userModel.findOne({ userId: userId });
@@ -246,7 +221,6 @@ export class UserService {
     return friendList;
   }
 
-  // Find Password
   async findPw(findPw: FindPwDto) {
     const { email, userId } = findPw;
     const userInfo = await this.userModel.findOne({ userId, email });
@@ -287,7 +261,7 @@ export class UserService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    // 임시 Password 생성
+
     const variable =
       '0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(
         ',',
@@ -300,7 +274,6 @@ export class UserService {
       return randomString;
     }
 
-    // Nodemailer
     const transporter = nodemailer.createTransport({
       service: 'naver',
       host: 'smtp.naver.com',
@@ -331,22 +304,20 @@ export class UserService {
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
-    const temporaryPw = await this.userModel.findOneAndUpdate(
+    const changePw = await this.userModel.findOneAndUpdate(
       { userId: userId },
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-
-    console.log('temporaryPw :', temporaryPw);
-    return '임시 비밀번호가 메일로 전송되었습니다.';
+    console.log('ChangeUser-->', changePw);
+    return '임시 비밀번호가 생성되었습니다.';
   }
 
-  // Change Password
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
     console.log(userId, email, password, newPw, newPwCheck);
     const userInfo = await this.userModel.findOne({ userId });
-    const unHashPw = bcrypt.compareSync(password, userInfo.userPw);
+    const unHashPw = await bcrypt.compareSync(password, userInfo.userPw);
 
     if (unHashPw == false) {
       throw new HttpException(

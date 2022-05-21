@@ -5,25 +5,25 @@ export type JobDocument = Job & Document;
 
 @Schema()
 export class Job {
-  @Prop({ required: true })
+  @Prop()
   roomId: number;
 
-  @Prop({ required: true })
+  @Prop()
   userSocketId: string;
 
-  @Prop({ required: true })
+  @Prop()
   userId: string;
 
-  @Prop({ required: true })
+  @Prop()
   userJob: string;
 
-  @Prop({ default: true })
+  @Prop()
   save: boolean;
 
-  @Prop({ default: false })
+  @Prop()
   AI: boolean;
 
-  @Prop({ default: false })
+  @Prop()
   chance: boolean;
 }
 

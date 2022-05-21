@@ -5,32 +5,32 @@ export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @Prop({ required: true, unique: true })
+  @Prop()
   userId: string;
 
-  @Prop({ required: true })
+  @Prop()
   email: string;
 
-  @Prop({ required: true })
+  @Prop()
   userPw: string;
 
-  @Prop({ required: true })
+  @Prop()
   userNick: string;
 
-  @Prop({ default: 0 })
+  @Prop()
   userProfile: string;
 
-  @Prop({ default: 0 })
+  @Prop()
   userWin: number;
 
-  @Prop({ default: 0 })
+  @Prop()
   userLose: number;
 
   @Prop()
   from: string;
 
-  @Prop([String])
-  friendList: string[];
+  @Prop()
+  friendList: [];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
