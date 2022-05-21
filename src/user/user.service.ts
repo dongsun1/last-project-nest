@@ -80,7 +80,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (existUsers.length) {
+    } else if (existUsers) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -180,7 +180,6 @@ export class UserService {
     return await this.userModel.findOne({ userId });
   }
 
-  // Login Check
   loginCheck(user: User) {
     return {
       userId: user.userId,
@@ -337,6 +336,7 @@ export class UserService {
       { $set: { userPw: hashedPw } },
       { new: true },
     );
+
     console.log('temporaryPw :', temporaryPw);
     return '임시 비밀번호가 메일로 전송되었습니다.';
   }
@@ -344,7 +344,7 @@ export class UserService {
   // Change Password
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
-    // console.log(userId, email, password, newPw, newPwCheck);
+    console.log(userId, email, password, newPw, newPwCheck);
     const userInfo = await this.userModel.findOne({ userId });
     const unHashPw = bcrypt.compareSync(password, userInfo.userPw);
 
