@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { UserDocument } from './../schemas/user/user.schema';
+import { User, UserDocument } from './../schemas/user/user.schema';
 import { Model } from 'mongoose';
 import { Injectable, Query } from '@nestjs/common';
 import * as rp from 'request-promise';
