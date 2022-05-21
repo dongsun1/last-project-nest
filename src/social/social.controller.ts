@@ -16,7 +16,6 @@ export class SocialController {
     return this.SocialService.naverLoginMain(query);
   }
 
-  @Redirect('https://docs.nestjs.com', 302)
   @Get('kakaoLogin')
   kakaoLogin(@Res() res: any) {
     // console.log('kakaoLogin Controller');

@@ -5,6 +5,18 @@ import { Injectable, Query } from '@nestjs/common';
 import * as rp from 'request-promise';
 import * as jwt from 'jsonwebtoken';
 
+const naver = {
+  clientid: `${process.env.CLIENT_ID}`, //REST API
+  redirectUri: 'http://localhost:3000/naverLogin/main',
+  client_secret: `${process.env.CLIENT_SECRET}`,
+  state: 'login',
+};
+
+const kakao = {
+  clientid: `${process.env.CLIENTID}`, //REST API
+  redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+};
+
 @Injectable()
 export class SocialService {
   constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
