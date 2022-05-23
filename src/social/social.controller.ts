@@ -6,6 +6,7 @@ import { SocialService } from './social.service';
 export class SocialController {
   constructor(private readonly SocialService: SocialService) {}
 
+  @Redirect('https://docs.nestjs.com', 302)
   @Get('naverLogin')
   naverLogin() {
     return this.SocialService.naverLogin();
@@ -16,6 +17,7 @@ export class SocialController {
     return this.SocialService.naverLoginMain(query);
   }
 
+  @Redirect('https://docs.nestjs.com', 302)
   @Get('kakaoLogin')
   kakaoLogin(@Res() res: any) {
     // console.log('kakaoLogin Controller');

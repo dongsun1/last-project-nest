@@ -3,6 +3,7 @@ import { FindPwDto } from './dto/findPw.dto';
 import { FriendAddDto } from './dto/friendAdd-user';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
+import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -15,6 +16,7 @@ import * as nodemailer from 'nodemailer';
 export class UserService {
   constructor(@InjectModel('User') private userModel: Model<UserDocument>) {}
 
+  // Register
   async register(signUpData: SignUpUserDto) {
     const { userId, email, userPw, userPwCheck, userNick } = signUpData;
     // Validation Check
@@ -24,7 +26,7 @@ export class UserService {
     const userPwReg = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,15}$/; //4~15자 영문+숫자
 
     // signup -> userId, userName 중복검사
-    const existUsers = await this.userModel.find({
+    const existUsers = await this.userModel.findOne({
       $or: [{ userId }, { userNick }, { email }],
     });
 
@@ -146,9 +148,11 @@ export class UserService {
     };
   }
 
+  // login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
+    console.log('user :', user)
 
     // body passowrd = unHashPassword -->true
     const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
@@ -167,24 +171,32 @@ export class UserService {
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
     // console.log('webtoken-->',token)
 
-    return { token, userId };
+    return {
+      token,
+      userId : user.userId,
+      userNick : user.userNick
+    };
   }
 
   async findUser(userId: string) {
     return await this.userModel.findOne({ userId });
   }
 
-  loginCheck(user: User) {
-    return {
-      userId: user.userId,
-      userNick: user.userNick,
-    };
-  }
+  // loginCheck(user: User) {
+  //   return {
+  //     userId: user.userId,
+  //     userNick: user.userNick,
+  //   };
+  // }
 
+  // Friend Add
   async friendAdd(friendUser: FriendAddDto, user: User) {
+    // cosnt { user } =   
     const loginUser = user.userId;
+    console.log('loginUser :', loginUser)
 
     const friendUserId = friendUser.friendUserId;
+    console.log('friendId :', friendUserId)
 
     const searchInfo = await this.userModel.findOne({ userId: friendUserId });
 
@@ -211,8 +223,25 @@ export class UserService {
     }
 
     return msg;
-  }
+  };
 
+  // Friend Remove
+  async friendRemove(removeUser: FriendRemoveDto, user: User){
+    const loginUser = user.userId;
+    // console.log('remove login user :',loginUser)
+    const removeUserId = removeUser.removeUserId;
+    // console.log('user',removeUserId)
+    let msg = '';
+    await this.userModel.updateOne(
+        { userId: loginUser },
+        { $pull: { friendList: { userId: removeUserId } } },
+    );
+    msg = '삭제완료';
+    return msg;
+  };
+
+
+  // Friend List
   async friendList(user: User) {
     const userId = user.userId;
     const userInfo = await this.userModel.findOne({ userId: userId });
@@ -221,6 +250,7 @@ export class UserService {
     return friendList;
   }
 
+  // Password Find & Nodemailer
   async findPw(findPw: FindPwDto) {
     const { email, userId } = findPw;
     const userInfo = await this.userModel.findOne({ userId, email });
@@ -284,6 +314,7 @@ export class UserService {
         pass: `${process.env.PASSWORD}`,
       },
     });
+    
     const emailOptions = {
       // 옵션값 설정
       from: '7707jo@naver.com',
@@ -313,6 +344,7 @@ export class UserService {
     return '임시 비밀번호가 생성되었습니다.';
   }
 
+  // Password Change
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
     console.log(userId, email, password, newPw, newPwCheck);

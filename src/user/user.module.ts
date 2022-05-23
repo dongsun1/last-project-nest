@@ -19,11 +19,16 @@ export class UserModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(AuthMiddleware)
+       //exclude -> 제외시킬것만추가할 것.
       .exclude(
         { path: 'user/register', method: RequestMethod.POST },
         { path: 'user/login', method: RequestMethod.POST },
-        { path: 'user/findPw', method: RequestMethod.POST },
-        { path: 'user/changePw', method: RequestMethod.POST },
+        // { path: 'user/findPw', method: RequestMethod.POST },
+        // { path: 'user/changePw', method: RequestMethod.POST },
+        // { path: 'user/friendAdd', method: RequestMethod.POST },
+        // { path: 'user/friendRemove', method: RequestMethod.POST },
+        // { path: 'user/friendList', method: RequestMethod.POST },
+
       )
       .forRoutes(UserController);
   }
