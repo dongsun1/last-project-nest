@@ -90,7 +90,7 @@ export class SocialService {
     const loginUser = await this.userModel.findOne({ userId });
     // const naverId = loginUser[0].userId
     // const naverNick = loginUser[0].userNick
-    const token = jwt.sign({ userId: loginUser.userId }, `${process.env.KEY}`);
+    const token = jwt.sign({ userId: loginUser[0].userId }, `${process.env.KEY}`);
     console.log('token-->', token);
     return {
       token,
@@ -171,7 +171,7 @@ export class SocialService {
 
     const loginUser = await this.userModel.findOne({ userId });
     console.log('loginUser-->', loginUser);
-    const token = jwt.sign({ userId: loginUser.userId }, `${process.env.KEY}`);
+    const token = jwt.sign({ userId: loginUser[0].userId }, `${process.env.KEY}`);
     // console.log("jwtToken-->", token);
     // console.log("User-->", token, userId, userNick);
     return {
