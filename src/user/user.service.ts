@@ -151,6 +151,7 @@ export class UserService {
   // login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
+    console.log('data :', loginData)
     const user = await this.userModel.findOne({ userId });
     console.log('user :', user)
 

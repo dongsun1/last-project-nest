@@ -1,29 +1,39 @@
 import { HttpStatus } from '@nestjs/common';
-import { getModelToken, MongooseModule } from '@nestjs/mongoose';
+import { getModelToken, MongooseModule, getConnectionToken  } from '@nestjs/mongoose';
+// import { Test, TestingModule } from '@nestjs/testing';
 import { Test, TestingModule } from '@nestjs/testing';
 // import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
-import { UserSchema } from '../schemas/user/user.schema';
+import { User, UserSchema } from '../schemas/user/user.schema';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
+import { UserModule } from './user.module';
+import { Model, Connection } from 'mongoose';
+import {
+  TestDocumentDatabaseModule,
+  closeInMongodConnection
+} from './test-database.module';
 dotenv.config();
 
 describe('UserService', () => {
   let service: UserService;
+  let connection : Connection;
+  let userModel : Model<User>;
   // let connection;
   // let db;
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot(),
-        MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+        TestDocumentDatabaseModule,
+        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
       ],
       providers: [
         UserService,
         {
-          provide: getModelToken('User'),
-          useValue: { find: jest.fn(), create: jest.fn(), findOne: jest.fn() },
+          provide: getModelToken(User.name),
+          // useValue: { find: jest.fn(), create: jest.fn(), findOne: jest.fn() },
+          useValue : userModel,
         },
       ],
     }).compile();
@@ -34,10 +44,8 @@ describe('UserService', () => {
     // db = await connection.db('mapiaGame');
 
     service = module.get<UserService>(UserService);
-  });
-
-  afterAll(async () => {
-    // await connection.close();
+    userModel = module.get<Model<User>>(getModelToken(User.name));
+    connection = await module.get(getConnectionToken());
   });
 
   it('should be defined', () => {
@@ -45,23 +53,6 @@ describe('UserService', () => {
   });
 
   describe('register', () => {
-    it('회원가입 완료', async () => {
-      const result = {
-        msg: '회원가입 완료',
-        userId: 'test1234',
-        userNick: 'test1234',
-      };
-
-      const register = await service.register({
-        userId: 'test1234',
-        email: 'test@test.com',
-        userPw: 'test1234',
-        userPwCheck: 'test1234',
-        userNick: 'test1234',
-      });
-      expect(register).toEqual(result);
-    });
-
     it('아이디를 입력하세요.', async () => {
       try {
         await service.register({
@@ -245,6 +236,7 @@ describe('UserService', () => {
       } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual('비밀번호를 입력하세요.');
+        console.log('error :',e.response.errorMessage);
       }
     });
 
@@ -298,6 +290,23 @@ describe('UserService', () => {
         );
       }
     });
+
+    it('회원가입 완료', async () => {
+      const result = {
+        msg: '회원가입 완료',
+        userId: 'test1234',
+        userNick: 'test1234',
+      };
+
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      expect(register).toEqual(result);
+    });
   });
 
   describe('login', () => {
@@ -329,4 +338,9 @@ describe('UserService', () => {
   // describe('findPw', () => {});
 
   // describe('changePw', () => {});
+
+  afterAll(async () => {
+    await connection.close(true);
+    await closeInMongodConnection();
+  });
 });
