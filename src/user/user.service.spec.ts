@@ -3,7 +3,7 @@ import { getModelToken, MongooseModule } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
 // import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
-import { UserSchema } from '../schemas/user/user.schema';
+import { User, UserSchema } from '../schemas/user/user.schema';
 import * as dotenv from 'dotenv';
 import { ConfigModule } from '@nestjs/config';
 dotenv.config();
@@ -16,7 +16,10 @@ describe('UserService', () => {
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        ConfigModule.forRoot(),
+        MongooseModule.forRoot(`mongodb+srv://${process.env.DB}majority`, {
+          useNewUrlParser: true,
+          useUnifiedTopology: true,
+        }),
         MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
       ],
       providers: [
@@ -302,6 +305,13 @@ describe('UserService', () => {
 
   describe('login', () => {
     it('아이디 또는 비밀번호가 틀렸습니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
       try {
         const loginData = {
           userId: 'test1234',
@@ -310,7 +320,7 @@ describe('UserService', () => {
         await service.login(loginData);
       } catch (e) {
         console.log(e);
-        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        // expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual(
           '아이디 또는 비밀번호가 틀렸습니다.',
         );
@@ -318,7 +328,19 @@ describe('UserService', () => {
     });
   });
 
-  // describe('findUser', () => {});
+  describe('findUser', () => {
+    it('findUser', async () => {
+      const user = await service.findUser('test1234');
+      console.log(user);
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+    });
+  });
 
   // describe('loginCheck', () => {});
 

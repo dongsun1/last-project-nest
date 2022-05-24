@@ -152,7 +152,7 @@ export class UserService {
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
-    console.log('user :', user)
+    console.log('user :', user);
 
     // body passowrd = unHashPassword -->true
     const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
@@ -173,8 +173,8 @@ export class UserService {
 
     return {
       token,
-      userId : user.userId,
-      userNick : user.userNick
+      userId: user.userId,
+      userNick: user.userNick,
     };
   }
 
@@ -191,12 +191,12 @@ export class UserService {
 
   // Friend Add
   async friendAdd(friendUser: FriendAddDto, user: User) {
-    // cosnt { user } =   
+    // cosnt { user } =
     const loginUser = user.userId;
-    console.log('loginUser :', loginUser)
+    console.log('loginUser :', loginUser);
 
     const friendUserId = friendUser.friendUserId;
-    console.log('friendId :', friendUserId)
+    console.log('friendId :', friendUserId);
 
     const searchInfo = await this.userModel.findOne({ userId: friendUserId });
 
@@ -223,23 +223,22 @@ export class UserService {
     }
 
     return msg;
-  };
+  }
 
   // Friend Remove
-  async friendRemove(removeUser: FriendRemoveDto, user: User){
+  async friendRemove(removeUser: FriendRemoveDto, user: User) {
     const loginUser = user.userId;
     // console.log('remove login user :',loginUser)
     const removeUserId = removeUser.removeUserId;
     // console.log('user',removeUserId)
     let msg = '';
     await this.userModel.updateOne(
-        { userId: loginUser },
-        { $pull: { friendList: { userId: removeUserId } } },
+      { userId: loginUser },
+      { $pull: { friendList: { userId: removeUserId } } },
     );
     msg = '삭제완료';
     return msg;
-  };
-
+  }
 
   // Friend List
   async friendList(user: User) {
@@ -314,7 +313,7 @@ export class UserService {
         pass: `${process.env.PASSWORD}`,
       },
     });
-    
+
     const emailOptions = {
       // 옵션값 설정
       from: '7707jo@naver.com',
