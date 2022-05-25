@@ -1,5 +1,9 @@
 import { HttpStatus } from '@nestjs/common';
-import { getModelToken, MongooseModule, getConnectionToken  } from '@nestjs/mongoose';
+import {
+  getModelToken,
+  MongooseModule,
+  getConnectionToken,
+} from '@nestjs/mongoose';
 // import { Test, TestingModule } from '@nestjs/testing';
 import { Test, TestingModule } from '@nestjs/testing';
 // import { MongoClient } from 'mongodb';
@@ -11,18 +15,18 @@ import { UserModule } from './user.module';
 import { Model, Connection } from 'mongoose';
 import {
   TestDocumentDatabaseModule,
-  closeInMongodConnection
+  closeInMongodConnection,
 } from './test-database.module';
 dotenv.config();
 
 describe('UserService', () => {
   let service: UserService;
-  let connection : Connection;
-  let userModel : Model<User>;
+  let connection: Connection;
+  let userModel: Model<User>;
   // let connection;
   // let db;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         TestDocumentDatabaseModule,
@@ -33,7 +37,7 @@ describe('UserService', () => {
         {
           provide: getModelToken(User.name),
           // useValue: { find: jest.fn(), create: jest.fn(), findOne: jest.fn() },
-          useValue : userModel,
+          useValue: userModel,
         },
       ],
     }).compile();
@@ -236,7 +240,7 @@ describe('UserService', () => {
       } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual('비밀번호를 입력하세요.');
-        console.log('error :',e.response.errorMessage);
+        console.log('error :', e.response.errorMessage);
       }
     });
 

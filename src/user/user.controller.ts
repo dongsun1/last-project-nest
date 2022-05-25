@@ -7,7 +7,6 @@ import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { UserService } from './user.service';
 import { Body, Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
 
-
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -36,8 +35,11 @@ export class UserController {
 
   @Post('friendRemove')
   async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
-      const msg = await this.userService.friendRemove(removeUser, res.locals.user);
-      res.status(HttpStatus.OK).send(msg);
+    const msg = await this.userService.friendRemove(
+      removeUser,
+      res.locals.user,
+    );
+    res.status(HttpStatus.OK).send(msg);
   }
 
   @Post('friendList')
