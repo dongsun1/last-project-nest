@@ -4,27 +4,19 @@ import {
   MongooseModule,
   getConnectionToken,
 } from '@nestjs/mongoose';
-// import { Test, TestingModule } from '@nestjs/testing';
 import { Test, TestingModule } from '@nestjs/testing';
-// import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
 import { User, UserSchema } from '../schemas/user/user.schema';
-import * as dotenv from 'dotenv';
-import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './user.module';
 import { Model, Connection } from 'mongoose';
 import {
   TestDocumentDatabaseModule,
   closeInMongodConnection,
 } from './test-database.module';
-dotenv.config();
 
 describe('UserService', () => {
   let service: UserService;
   let connection: Connection;
   let userModel: Model<User>;
-  // let connection;
-  // let db;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -36,20 +28,19 @@ describe('UserService', () => {
         UserService,
         {
           provide: getModelToken(User.name),
-          // useValue: { find: jest.fn(), create: jest.fn(), findOne: jest.fn() },
           useValue: userModel,
         },
       ],
     }).compile();
 
-    // connection = await MongoClient.connect(
-    //   `mongodb+srv://${process.env.DB}majority`,
-    // );
-    // db = await connection.db('mapiaGame');
-
     service = module.get<UserService>(UserService);
     userModel = module.get<Model<User>>(getModelToken(User.name));
     connection = await module.get(getConnectionToken());
+  });
+
+  afterAll(async () => {
+    await connection.close(true);
+    await closeInMongodConnection();
   });
 
   it('should be defined', () => {
@@ -240,7 +231,6 @@ describe('UserService', () => {
       } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual('비밀번호를 입력하세요.');
-        console.log('error :', e.response.errorMessage);
       }
     });
 
@@ -325,23 +315,18 @@ describe('UserService', () => {
       try {
         const loginData = {
           userId: 'test1234',
-          userPw: 'test1234',
+          userPw: 'test123',
         };
         await service.login(loginData);
       } catch (e) {
-        console.log(e);
-        // expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual(
           '아이디 또는 비밀번호가 틀렸습니다.',
         );
       }
     });
-  });
 
-  describe('findUser', () => {
-    it('findUser', async () => {
-      const user = await service.findUser('test1234');
-      console.log(user);
+    it('로그인 성공', async () => {
       await service.register({
         userId: 'test1234',
         email: 'test@test.com',
@@ -349,10 +334,109 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      const loginUser = await service.login(loginData);
+      const result = { userId: 'test1234', userNick: 'test1234' };
+      expect(loginUser.userId).toEqual(result.userId);
+      expect(loginUser.userNick).toEqual(result.userNick);
     });
   });
 
-  // describe('loginCheck', () => {});
+  describe('logout', () => {
+    it('로그아웃 성공', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      await service.login(loginData);
+      const result = await service.logout(loginData.userId);
+      expect(result.msg).toEqual('로그아웃 성공');
+    });
+
+    it('로그아웃 실패', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      await service.login(loginData);
+      const result = await service.logout(loginData.userId + ' ');
+      expect(result.msg).toEqual('로그아웃 실패');
+    });
+
+    it('로그아웃 실패', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const result = await service.logout('test1234');
+      expect(result.msg).toEqual('로그아웃 실패');
+    });
+  });
+
+  describe('loginCheck', () => {
+    it('로그인 체크', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const user = await service.findUser(register.userId);
+      const result = service.loginCheck(user);
+      expect(result.userId).toEqual(user.userId);
+      expect(result.userNick).toEqual(user.userNick);
+    });
+  });
+
+  describe('gameRecord', () => {
+    it('게임 전적 조회 성공', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const result = await service.gameRecord(register.userId);
+      expect(result.msg).toEqual('게임 전적 조회 성공');
+      expect(result.userWin).toEqual(0);
+      expect(result.userLose).toEqual(0);
+    });
+
+    it('게임 전적 조회 실패', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const result = await service.gameRecord(register.userId + ' ');
+      expect(result.msg).toEqual('게임 전적 조회 실패');
+    });
+  });
 
   // describe('friendAdd', () => {});
 
@@ -361,9 +445,4 @@ describe('UserService', () => {
   // describe('findPw', () => {});
 
   // describe('changePw', () => {});
-
-  afterAll(async () => {
-    await connection.close(true);
-    await closeInMongodConnection();
-  });
 });

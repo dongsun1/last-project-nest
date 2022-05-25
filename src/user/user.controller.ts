@@ -21,11 +21,23 @@ export class UserController {
     return await this.userService.login(loginData);
   }
 
-  // @Get('loginCheck')
-  // loginCheck(@Res() res: any) {
-  //   const user = this.userService.loginCheck(res.locals.user);
-  //   res.status(HttpStatus.OK).send(user);
-  // }
+  @Get('logout')
+  async logout(@Res() res: any) {
+    const { userId } = res.locals.user;
+    return await this.userService.login(userId);
+  }
+
+  @Get('loginCheck')
+  loginCheck(@Res() res: any) {
+    const user = this.userService.loginCheck(res.locals.user);
+    res.status(HttpStatus.OK).send(user);
+  }
+
+  @Get('gameRecord')
+  gameRecord(@Res() res: any) {
+    const gameRecord = this.userService.gameRecord(res.locals.user.userId);
+    res.status(HttpStatus.OK).send(gameRecord);
+  }
 
   @Post('friendAdd')
   async friendAdd(@Body() friendUser: FriendAddDto, @Res() res: any) {

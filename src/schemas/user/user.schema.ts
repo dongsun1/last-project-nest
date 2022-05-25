@@ -31,6 +31,9 @@ export class User {
 
   @Prop()
   friendList: [];
+
+  @Prop({ default: false })
+  login: boolean;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
