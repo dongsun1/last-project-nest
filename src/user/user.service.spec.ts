@@ -438,7 +438,79 @@ describe('UserService', () => {
     });
   });
 
-  // describe('friendAdd', () => {});
+  describe('friendAdd', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+
+      const user = await service.findUser('test1');
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('존재하지 않는 아이디입니다.');
+    });
+
+    it('이미 추가된 친구입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      await service.register({
+        userId: 'test2',
+        email: 'test2@test2.com',
+        userPw: 'test2',
+        userPwCheck: 'test2',
+        userNick: 'test2',
+      });
+
+      const user = await service.findUser('test1');
+      await service.friendAdd('test2', user);
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('이미 추가된 친구입니다.');
+    });
+
+    it('친구추가 완료', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      await service.register({
+        userId: 'test2',
+        email: 'test2@test2.com',
+        userPw: 'test2',
+        userPwCheck: 'test2',
+        userNick: 'test2',
+      });
+
+      const user = await service.findUser('test1');
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('친구추가 완료');
+    });
+  });
+
+  describe('friendRemove', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      const user = await service.findUser('test1');
+      const result = await service.friendRemove('test2', user);
+      expect(result).toEqual('삭제완료');
+    });
+  });
 
   // describe('friendList', () => {});
 

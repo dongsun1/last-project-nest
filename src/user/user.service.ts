@@ -1,9 +1,7 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
-import { FriendAddDto } from './dto/friendAdd-user';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
-import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -220,21 +218,19 @@ export class UserService {
   }
 
   // Friend Add
-  async friendAdd(friendUser: FriendAddDto, user: User) {
+  async friendAdd(friendUser: string, user: User) {
     const loginUser = user.userId;
 
-    const friendUserId = friendUser.friendUserId;
-
-    const searchInfo = await this.userModel.findOne({ userId: friendUserId });
+    const searchInfo = await this.userModel.findOne({ userId: friendUser });
 
     let msg = '';
     if (searchInfo == null || searchInfo == undefined) {
-      msg = '존재하지 않는 아이디 입니다.';
+      msg = '존재하지 않는 아이디입니다.';
       return msg;
     } else {
       const existFriend = await this.userModel.find(
         { userId: loginUser },
-        { friendList: { $elemMatch: { userId: friendUserId } } },
+        { friendList: { $elemMatch: { userId: friendUser } } },
       );
 
       if (existFriend[0].friendList.length !== 0) {
@@ -243,23 +239,21 @@ export class UserService {
       } else {
         await this.userModel.updateOne(
           { userId: loginUser },
-          { $push: { friendList: { userId: friendUserId } } },
+          { $push: { friendList: { userId: friendUser } } },
         );
         msg = '친구추가 완료';
+        return msg;
       }
     }
-
-    return msg;
   }
 
   // Friend Remove
-  async friendRemove(removeUser: FriendRemoveDto, user: User) {
+  async friendRemove(removeUser: string, user: User) {
     const loginUser = user.userId;
-    const removeUserId = removeUser.removeUserId;
     let msg = '';
     await this.userModel.updateOne(
       { userId: loginUser },
-      { $pull: { friendList: { userId: removeUserId } } },
+      { $pull: { friendList: { userId: removeUser } } },
     );
     msg = '삭제완료';
     return msg;

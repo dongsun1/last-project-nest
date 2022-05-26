@@ -1,7 +1,5 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
-import { FriendAddDto } from './dto/friendAdd-user';
-import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { UserService } from './user.service';
@@ -40,13 +38,13 @@ export class UserController {
   }
 
   @Post('friendAdd')
-  async friendAdd(@Body() friendUser: FriendAddDto, @Res() res: any) {
+  async friendAdd(@Body() friendUser: string, @Res() res: any) {
     const msg = await this.userService.friendAdd(friendUser, res.locals.user);
     res.status(HttpStatus.OK).send(msg);
   }
 
   @Post('friendRemove')
-  async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
+  async friendRemove(@Body() removeUser: string, @Res() res: any) {
     const msg = await this.userService.friendRemove(
       removeUser,
       res.locals.user,
