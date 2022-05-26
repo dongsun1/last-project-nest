@@ -151,13 +151,13 @@ export class UserService {
   // login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
-    console.log('data :', loginData)
+    // console.log('data :', loginData)
     const user = await this.userModel.findOne({ userId });
-    console.log('user :', user)
+    // console.log('user :', user)
 
     // body passowrd = unHashPassword -->true
     const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
-    console.log('unHashPw->', unHashPw); // true or false
+    // console.log('unHashPw->', unHashPw); // true or false
     // userId, password 없는경우
     if (user.userId !== userId || unHashPw == false) {
       throw new HttpException(
@@ -194,10 +194,10 @@ export class UserService {
   async friendAdd(friendUser: FriendAddDto, user: User) {
     // cosnt { user } =   
     const loginUser = user.userId;
-    console.log('loginUser :', loginUser)
+    // console.log('loginUser :', loginUser)
 
     const friendUserId = friendUser.friendUserId;
-    console.log('friendId :', friendUserId)
+    // console.log('friendId :', friendUserId)
 
     const searchInfo = await this.userModel.findOne({ userId: friendUserId });
 
@@ -245,8 +245,11 @@ export class UserService {
   // Friend List
   async friendList(user: User) {
     const userId = user.userId;
+    // console.log('friendList userId :', userId)
     const userInfo = await this.userModel.findOne({ userId: userId });
+    // console.log('friendList UserInfo:', userInfo)
     const friendList = userInfo.friendList;
+    // console.log('friendList:',friendList)
 
     return friendList;
   }
@@ -255,11 +258,35 @@ export class UserService {
   async findPw(findPw: FindPwDto) {
     const { email, userId } = findPw;
     const userInfo = await this.userModel.findOne({ userId, email });
+    // console.log('findPw userInfo:', userInfo)
 
     const emailReg =
       /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-
-    if (!userInfo) {
+      if (userId == '' || userId == undefined || userId == null) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            errorMessage: '아이디를 입력하세요.',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (email == '' || email == undefined || email == null) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            errorMessage: '이메일을 입력하세요.',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      } else if (!emailReg.test(email)) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            errorMessage: '이메일 형식을 올바르게 입력해주세요.',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }else if (!userInfo) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -267,31 +294,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } else if (userId == '' || userId == undefined || userId == null) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          errorMessage: '아이디를 입력하세요.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (email == '' || email == undefined || email == null) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          errorMessage: '이메일을 입력하세요.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    } else if (!emailReg.test(email)) {
-      throw new HttpException(
-        {
-          status: HttpStatus.BAD_REQUEST,
-          errorMessage: '이메일 형식을 올바르게 입력해주세요.',
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    } 
 
     const variable =
       '0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(
@@ -336,21 +339,24 @@ export class UserService {
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
+    // console.log('findPw hashPw :', hashedPw)
     const changePw = await this.userModel.findOneAndUpdate(
       { userId: userId },
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    console.log('ChangeUser-->', changePw);
+    // console.log('ChangeUser-->', changePw);
     return '임시 비밀번호가 생성되었습니다.';
   }
 
   // Password Change
   async changePw(changePw: ChangePwDto) {
     const { userId, email, password, newPw, newPwCheck } = changePw;
-    console.log(userId, email, password, newPw, newPwCheck);
+    // console.log(userId, email, password, newPw, newPwCheck);
     const userInfo = await this.userModel.findOne({ userId });
+    // console.log('userInfo :', userInfo);
     const unHashPw = await bcrypt.compareSync(password, userInfo.userPw);
+    // console.log('true or false :', unHashPw)
 
     if (unHashPw == false) {
       throw new HttpException(
@@ -375,7 +381,7 @@ export class UserService {
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    console.log('updatePw-->', updatePw);
+    // console.log('updatePw-->', updatePw);
     return '비밀번호 변경 완료';
   }
 }
