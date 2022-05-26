@@ -336,6 +336,8 @@ export class UserService {
       },
     });
 
+    // console.log('transporter :', transporter)
+
     const emailOptions = {
       // 옵션값 설정
       from: '7707jo@naver.com',
@@ -349,7 +351,7 @@ export class UserService {
     };
     transporter.sendMail(emailOptions, (err, info) => {
       if (err) {
-        console.log(err);
+        console.log('sendMail :',err);
       } else {
         console.log('email 전송 완료 : ' + info.response);
       }
