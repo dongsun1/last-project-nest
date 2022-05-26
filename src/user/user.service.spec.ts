@@ -1,26 +1,22 @@
 import { HttpStatus } from '@nestjs/common';
-import { getModelToken, MongooseModule, getConnectionToken  } from '@nestjs/mongoose';
-// import { Test, TestingModule } from '@nestjs/testing';
+import {
+  getModelToken,
+  MongooseModule,
+  getConnectionToken,
+} from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
-// import { MongoClient } from 'mongodb';
 import { UserService } from './user.service';
 import { User, UserSchema } from '../schemas/user/user.schema';
-import * as dotenv from 'dotenv';
-import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './user.module';
 import { Model, Connection } from 'mongoose';
 import {
   TestDocumentDatabaseModule,
-  closeInMongodConnection
+  closeInMongodConnection,
 } from './test-database.module';
-dotenv.config();
 
 describe('UserService', () => {
   let service: UserService;
-  let connection : Connection;
-  let userModel : Model<User>;
-  // let connection;
-  // let db;
+  let connection: Connection;
+  let userModel: Model<User>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -32,8 +28,7 @@ describe('UserService', () => {
         UserService,
         {
           provide: getModelToken(User.name),
-          // useValue: { find: jest.fn(), create: jest.fn(), findOne: jest.fn() },
-          useValue : userModel,
+          useValue: userModel,
         },
       ],
     }).compile();
@@ -41,6 +36,11 @@ describe('UserService', () => {
     service = module.get<UserService>(UserService);
     userModel = module.get<Model<User>>(getModelToken(User.name));
     connection = await module.get(getConnectionToken());
+  });
+
+  afterAll(async () => {
+    await connection.close(true);
+    await closeInMongodConnection();
   });
 
   it('should be defined', () => {
@@ -315,7 +315,7 @@ describe('UserService', () => {
       try {
         const loginData = {
           userId: 'test1234',
-          userPw: 'test1234',
+          userPw: 'test123',
         };
         await service.login(loginData);
       } catch (e) {
@@ -325,13 +325,192 @@ describe('UserService', () => {
         );
       }
     });
+
+    it('로그인 성공', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      const loginUser = await service.login(loginData);
+      const result = { userId: 'test1234', userNick: 'test1234' };
+      expect(loginUser.userId).toEqual(result.userId);
+      expect(loginUser.userNick).toEqual(result.userNick);
+    });
   });
 
-  // describe('findUser', () => {});
+  describe('logout', () => {
+    it('로그아웃 성공', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      await service.login(loginData);
+      const result = await service.logout(loginData.userId);
+      expect(result.msg).toEqual('로그아웃 성공');
+    });
 
-  // describe('loginCheck', () => {});
+    it('로그아웃 실패', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      await service.login(loginData);
+      const result = await service.logout(loginData.userId + ' ');
+      expect(result.msg).toEqual('로그아웃 실패');
+    });
 
-  // describe('friendAdd', () => {});
+    it('로그아웃 실패', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const result = await service.logout('test1234');
+      expect(result.msg).toEqual('로그아웃 실패');
+    });
+  });
+
+  describe('loginCheck', () => {
+    it('로그인 체크', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const user = await service.findUser(register.userId);
+      const result = service.loginCheck(user);
+      expect(result.userId).toEqual(user.userId);
+      expect(result.userNick).toEqual(user.userNick);
+    });
+  });
+
+  describe('gameRecord', () => {
+    it('게임 전적 조회 성공', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const result = await service.gameRecord(register.userId);
+      expect(result.msg).toEqual('게임 전적 조회 성공');
+      expect(result.userWin).toEqual(0);
+      expect(result.userLose).toEqual(0);
+    });
+
+    it('게임 전적 조회 실패', async () => {
+      const register = await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const result = await service.gameRecord(register.userId + ' ');
+      expect(result.msg).toEqual('게임 전적 조회 실패');
+    });
+  });
+
+  describe('friendAdd', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+
+      const user = await service.findUser('test1');
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('존재하지 않는 아이디입니다.');
+    });
+
+    it('이미 추가된 친구입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      await service.register({
+        userId: 'test2',
+        email: 'test2@test2.com',
+        userPw: 'test2',
+        userPwCheck: 'test2',
+        userNick: 'test2',
+      });
+
+      const user = await service.findUser('test1');
+      await service.friendAdd('test2', user);
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('이미 추가된 친구입니다.');
+    });
+
+    it('친구추가 완료', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      await service.register({
+        userId: 'test2',
+        email: 'test2@test2.com',
+        userPw: 'test2',
+        userPwCheck: 'test2',
+        userNick: 'test2',
+      });
+
+      const user = await service.findUser('test1');
+      const result = await service.friendAdd('test2', user);
+      expect(result).toEqual('친구추가 완료');
+    });
+  });
+
+  describe('friendRemove', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1',
+        email: 'test1@test1.com',
+        userPw: 'test1',
+        userPwCheck: 'test1',
+        userNick: 'test1',
+      });
+      const user = await service.findUser('test1');
+      const result = await service.friendRemove('test2', user);
+      expect(result).toEqual('삭제완료');
+    });
+  });
 
   describe('friendList', () => {
     it('friend List 조회', async () => {

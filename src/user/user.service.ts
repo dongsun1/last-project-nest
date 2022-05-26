@@ -1,9 +1,7 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
-import { FriendAddDto } from './dto/friendAdd-user';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
-import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { User, UserDocument } from '../schemas/user/user.schema';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -148,16 +146,12 @@ export class UserService {
     };
   }
 
-  // login
+  // Login
   async login(loginData: LoginUserDto) {
     const { userId, userPw } = loginData;
-    // console.log('data :', loginData)
     const user = await this.userModel.findOne({ userId });
-    // console.log('user :', user)
 
-    // body passowrd = unHashPassword -->true
-    const unHashPw = await bcrypt.compareSync(userPw, user.userPw);
-    // console.log('unHashPw->', unHashPw); // true or false
+    const unHashPw = bcrypt.compareSync(userPw, user.userPw);
     // userId, password 없는경우
     if (user.userId !== userId || unHashPw == false) {
       throw new HttpException(
@@ -170,45 +164,73 @@ export class UserService {
     }
 
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
-    // console.log('webtoken-->',token)
+    await this.userModel.updateOne({ userId }, { $set: { login: true } });
 
     return {
       token,
-      userId : user.userId,
-      userNick : user.userNick
+      userId: user.userId,
+      userNick: user.userNick,
     };
   }
 
+  // FindUser
   async findUser(userId: string) {
     return await this.userModel.findOne({ userId });
   }
 
-  // loginCheck(user: User) {
-  //   return {
-  //     userId: user.userId,
-  //     userNick: user.userNick,
-  //   };
-  // }
+  // Logout
+  async logout(userId: string) {
+    const result = await this.userModel.updateOne(
+      { userId },
+      { $set: { login: false } },
+    );
+    if (result.modifiedCount === 1) {
+      return { msg: '로그아웃 성공' };
+    } else {
+      return { msg: '로그아웃 실패' };
+    }
+  }
+
+  // LoginCheck
+  loginCheck(user: User) {
+    return {
+      userId: user.userId,
+      userNick: user.userNick,
+    };
+  }
+
+  // GameRecord
+  async gameRecord(userId: string) {
+    const userRecord = await this.userModel.findOne({
+      userId: userId,
+    });
+    if (userRecord) {
+      return {
+        msg: '게임 전적 조회 성공',
+        userWin: userRecord.userWin,
+        userLose: userRecord.userLose,
+      };
+    } else {
+      return {
+        msg: '게임 전적 조회 실패',
+      };
+    }
+  }
 
   // Friend Add
-  async friendAdd(friendUser: FriendAddDto, user: User) {
-    // cosnt { user } =   
+  async friendAdd(friendUser: string, user: User) {
     const loginUser = user.userId;
-    // console.log('loginUser :', loginUser)
 
-    const friendUserId = friendUser.friendUserId;
-    // console.log('friendId :', friendUserId)
-
-    const searchInfo = await this.userModel.findOne({ userId: friendUserId });
+    const searchInfo = await this.userModel.findOne({ userId: friendUser });
 
     let msg = '';
     if (searchInfo == null || searchInfo == undefined) {
-      msg = '존재하지 않는 아이디 입니다.';
+      msg = '존재하지 않는 아이디입니다.';
       return msg;
     } else {
       const existFriend = await this.userModel.find(
         { userId: loginUser },
-        { friendList: { $elemMatch: { userId: friendUserId } } },
+        { friendList: { $elemMatch: { userId: friendUser } } },
       );
 
       if (existFriend[0].friendList.length !== 0) {
@@ -217,30 +239,25 @@ export class UserService {
       } else {
         await this.userModel.updateOne(
           { userId: loginUser },
-          { $push: { friendList: { userId: friendUserId } } },
+          { $push: { friendList: { userId: friendUser } } },
         );
         msg = '친구추가 완료';
+        return msg;
       }
     }
-
-    return msg;
-  };
+  }
 
   // Friend Remove
-  async friendRemove(removeUser: FriendRemoveDto, user: User){
+  async friendRemove(removeUser: string, user: User) {
     const loginUser = user.userId;
-    // console.log('remove login user :',loginUser)
-    const removeUserId = removeUser.removeUserId;
-    // console.log('user',removeUserId)
     let msg = '';
     await this.userModel.updateOne(
-        { userId: loginUser },
-        { $pull: { friendList: { userId: removeUserId } } },
+      { userId: loginUser },
+      { $pull: { friendList: { userId: removeUser } } },
     );
     msg = '삭제완료';
     return msg;
-  };
-
+  }
 
   // Friend List
   async friendList(user: User) {
@@ -318,7 +335,7 @@ export class UserService {
         pass: `${process.env.PASSWORD}`,
       },
     });
-    
+
     const emailOptions = {
       // 옵션값 설정
       from: '7707jo@naver.com',
@@ -339,24 +356,19 @@ export class UserService {
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
-    // console.log('findPw hashPw :', hashedPw)
-    const changePw = await this.userModel.findOneAndUpdate(
+    await this.userModel.findOneAndUpdate(
       { userId: userId },
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    // console.log('ChangeUser-->', changePw);
     return '임시 비밀번호가 생성되었습니다.';
   }
 
   // Password Change
   async changePw(changePw: ChangePwDto) {
-    const { userId, email, password, newPw, newPwCheck } = changePw;
-    // console.log(userId, email, password, newPw, newPwCheck);
+    const { userId, password, newPw, newPwCheck } = changePw;
     const userInfo = await this.userModel.findOne({ userId });
-    // console.log('userInfo :', userInfo);
-    const unHashPw = await bcrypt.compareSync(password, userInfo.userPw);
-    // console.log('true or false :', unHashPw)
+    const unHashPw = bcrypt.compareSync(password, userInfo.userPw);
 
     if (unHashPw == false) {
       throw new HttpException(
@@ -376,12 +388,11 @@ export class UserService {
       );
     }
     const hashedPw = await bcrypt.hash(newPw, 10);
-    const updatePw = await this.userModel.findOneAndUpdate(
+    await this.userModel.findOneAndUpdate(
       { userId: userId },
       { $set: { userPw: hashedPw } },
       { new: true },
     );
-    // console.log('updatePw-->', updatePw);
     return '비밀번호 변경 완료';
   }
 }

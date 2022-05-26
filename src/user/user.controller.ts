@@ -1,12 +1,9 @@
 import { ChangePwDto } from './dto/changePw.dto';
 import { FindPwDto } from './dto/findPw.dto';
-import { FriendAddDto } from './dto/friendAdd-user';
-import { FriendRemoveDto } from './dto/friendRemove-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { UserService } from './user.service';
 import { Body, Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
-
 
 @Controller('user')
 export class UserController {
@@ -22,22 +19,37 @@ export class UserController {
     return await this.userService.login(loginData);
   }
 
-  // @Get('loginCheck')
-  // loginCheck(@Res() res: any) {
-  //   const user = this.userService.loginCheck(res.locals.user);
-  //   res.status(HttpStatus.OK).send(user);
-  // }
+  @Get('logout')
+  async logout(@Res() res: any) {
+    const { userId } = res.locals.user;
+    return await this.userService.login(userId);
+  }
+
+  @Get('loginCheck')
+  loginCheck(@Res() res: any) {
+    const user = this.userService.loginCheck(res.locals.user);
+    res.status(HttpStatus.OK).send(user);
+  }
+
+  @Get('gameRecord')
+  gameRecord(@Res() res: any) {
+    const gameRecord = this.userService.gameRecord(res.locals.user.userId);
+    res.status(HttpStatus.OK).send(gameRecord);
+  }
 
   @Post('friendAdd')
-  async friendAdd(@Body() friendUser: FriendAddDto, @Res() res: any) {
+  async friendAdd(@Body() friendUser: string, @Res() res: any) {
     const msg = await this.userService.friendAdd(friendUser, res.locals.user);
     res.status(HttpStatus.OK).send(msg);
   }
 
   @Post('friendRemove')
-  async friendRemove(@Body() removeUser: FriendRemoveDto, @Res() res: any) {
-      const msg = await this.userService.friendRemove(removeUser, res.locals.user);
-      res.status(HttpStatus.OK).send(msg);
+  async friendRemove(@Body() removeUser: string, @Res() res: any) {
+    const msg = await this.userService.friendRemove(
+      removeUser,
+      res.locals.user,
+    );
+    res.status(HttpStatus.OK).send(msg);
   }
 
   @Post('friendList')
