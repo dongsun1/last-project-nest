@@ -514,7 +514,6 @@ describe('UserService', () => {
 
   describe('friendList', () => {
     it('friend List 조회', async () => {
-
       await service.register({
         userId: 'test1234',
         email: 'test@test.com',
@@ -529,7 +528,6 @@ describe('UserService', () => {
   });
 
   describe('findPw', () => {
-
     it('아이디를 입력하세요.', async () => {
       await service.register({
         userId: 'test1234',
@@ -538,18 +536,17 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
-      
-      try{
+
+      try {
         const findPasswordData = {
-          userId : '',
-          email : 'test@test.com'
-        }
+          userId: '',
+          email: 'test@test.com',
+        };
         await service.findPw(findPasswordData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage)
-        .toEqual('아이디를 입력하세요.',);
-      };
+        expect(e.response.errorMessage).toEqual('아이디를 입력하세요.');
+      }
     });
 
     it('이메일을 입력하세요.', async () => {
@@ -560,17 +557,16 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
-      try{
+      try {
         const findPasswordData = {
-          userId : 'test1234',
-          email : ''
-        }
+          userId: 'test1234',
+          email: '',
+        };
         await service.findPw(findPasswordData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage)
-        .toEqual('이메일을 입력하세요.',);
-      };
+        expect(e.response.errorMessage).toEqual('이메일을 입력하세요.');
+      }
     });
 
     it('이메일 형식을 올바르게 입력해주세요.', async () => {
@@ -581,19 +577,19 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
-      try{
+      try {
         const findPasswordData = {
-          userId : 'test1234',
-          email : 'test1234@'
+          userId: 'test1234',
+          email: 'test1234@',
         };
         await service.findPw(findPasswordData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage)
-        .toEqual('이메일 형식을 올바르게 입력해주세요.',);
-      };
+        expect(e.response.errorMessage).toEqual(
+          '이메일 형식을 올바르게 입력해주세요.',
+        );
+      }
     });
-
 
     it('등록되지 않은 이메일 또는 아이디 입니다.', async () => {
       await service.register({
@@ -603,29 +599,31 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
-      try{
+      try {
         const findPasswordData = {
-          userId : 'test1234',
-          email : 'test0000@test.com'
+          userId: 'test1234',
+          email: 'test0000@test.com',
         };
         await service.findPw(findPasswordData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage)
-        .toEqual('등록되지 않은 이메일 또는 아이디 입니다.',);
-      };
+        expect(e.response.errorMessage).toEqual(
+          '등록되지 않은 이메일 또는 아이디 입니다.',
+        );
+      }
 
-      try{
+      try {
         const findPasswordData = {
-          userId : 'test0000',
-          email : 'test1234@test.com'
+          userId: 'test0000',
+          email: 'test1234@test.com',
         };
         await service.findPw(findPasswordData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage)
-        .toEqual('등록되지 않은 이메일 또는 아이디 입니다.',);
-      };
+        expect(e.response.errorMessage).toEqual(
+          '등록되지 않은 이메일 또는 아이디 입니다.',
+        );
+      }
     });
 
     it('임시 비밀번호가 생성되었습니다.', async () => {
@@ -638,16 +636,13 @@ describe('UserService', () => {
       });
 
       const findPasswordData = {
-        userId : 'test1234',
-        email : 'test@test.com'
+        userId: 'test1234',
+        email: 'test@test.com',
       };
       const result = await service.findPw(findPasswordData);
-  
+
       expect(result).toEqual('임시 비밀번호가 생성되었습니다.');
-
     });
-
-    
   });
 
   describe('changePw', () => {
@@ -657,24 +652,21 @@ describe('UserService', () => {
         email: 'test@test.com',
         userPw: 'test1234',
         userPwCheck: 'test1234',
-        userNick: 'test1234'
+        userNick: 'test1234',
       });
-      try{
+      try {
         const changePwData = {
           userId: 'test1234',
           email: 'test@test.com',
           password: 'temporaryPw12',
           newPw: 'changePw12',
-          newPwCheck: 'changePw12'
+          newPwCheck: 'changePw12',
         };
         await service.changePw(changePwData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
-        expect(e.response.errorMessage).toEqual(
-          '임시 비밀번호가 틀렸습니다.',
-        );
-      };
-      
+        expect(e.response.errorMessage).toEqual('임시 비밀번호가 틀렸습니다.');
+      }
     });
 
     it('새 비밀번호와 새 비밀번호 확인란이 일치하지 않습니다.', async () => {
@@ -683,23 +675,23 @@ describe('UserService', () => {
         email: 'test@test.com',
         userPw: 'temporaryPw12',
         userPwCheck: 'temporaryPw12',
-        userNick: 'test1234'
+        userNick: 'test1234',
       });
-      try{
+      try {
         const changePwData = {
           userId: 'test1234',
           email: 'test@test.com',
           password: 'temporaryPw12',
           newPw: 'changePw12',
-          newPwCheck: 'falsePw12'
+          newPwCheck: 'falsePw12',
         };
         await service.changePw(changePwData);
-      }catch(e){
+      } catch (e) {
         expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
         expect(e.response.errorMessage).toEqual(
           '새 비밀번호와 새 비밀번호 확인란이 일치하지 않습니다.',
         );
-      };
+      }
     });
 
     it('비밀번호 변경 완료', async () => {
@@ -708,7 +700,7 @@ describe('UserService', () => {
         email: 'test@test.com',
         userPw: 'temporaryPw12',
         userPwCheck: 'temporaryPw12',
-        userNick: 'test1234'
+        userNick: 'test1234',
       });
       const changePwData = {
         userId: 'test1234',
@@ -716,26 +708,24 @@ describe('UserService', () => {
         password: 'temporaryPw12',
         newPw: 'changePw12',
         newPwCheck: 'changePw12',
-        userNick: 'test1234'
-      }
+        userNick: 'test1234',
+      };
       const result = {
         userId: 'test1234',
         email: 'test@test.com',
         password: 'temporaryPw12',
         newPw: 'changePw12',
         newPwCheck: 'changePw12',
-        userNick: 'test1234'
-      }
-      
+        userNick: 'test1234',
+      };
+
       await service.changePw(changePwData);
       expect(changePwData).toEqual(result);
     });
-
   });
 
-
-    afterAll(async () => {
-      await connection.close(true);
-      await closeInMongodConnection();
-    });
+  afterAll(async () => {
+    await connection.close(true);
+    await closeInMongodConnection();
+  });
 });

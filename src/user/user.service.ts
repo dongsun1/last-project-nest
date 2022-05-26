@@ -279,31 +279,31 @@ export class UserService {
 
     const emailReg =
       /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-      if (userId == '' || userId == undefined || userId == null) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            errorMessage: '아이디를 입력하세요.',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      } else if (email == '' || email == undefined || email == null) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            errorMessage: '이메일을 입력하세요.',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      } else if (!emailReg.test(email)) {
-        throw new HttpException(
-          {
-            status: HttpStatus.BAD_REQUEST,
-            errorMessage: '이메일 형식을 올바르게 입력해주세요.',
-          },
-          HttpStatus.BAD_REQUEST,
-        );
-      }else if (!userInfo) {
+    if (userId == '' || userId == undefined || userId == null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '아이디를 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (email == '' || email == undefined || email == null) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '이메일을 입력하세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (!emailReg.test(email)) {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '이메일 형식을 올바르게 입력해주세요.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    } else if (!userInfo) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -311,7 +311,7 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
-    } 
+    }
 
     const variable =
       '0,1,2,3,4,5,6,7,8,9,a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z'.split(
