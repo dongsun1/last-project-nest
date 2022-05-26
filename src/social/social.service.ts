@@ -12,7 +12,7 @@ export class SocialService {
   naverLogin() {
     const naver = {
       clientid: `${process.env.CLIENT_ID}`, //REST API
-      redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+      redirectUri: 'https://mafiyang.com/naverLogin/main',
       // redirectUri: 'http://localhost:3000/naverLogin/main',
       client_secret: `${process.env.CLIENT_SECRET}`,
       state: 'login',
@@ -25,7 +25,7 @@ export class SocialService {
   async naverLoginMain(query) {
     const naver = {
       clientid: `${process.env.CLIENT_ID}`, //REST API
-      redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+      redirectUri: 'https://mafiyang.com/naverLogin/main',
       // redirectUri: 'http://localhost:3000/naverLogin/main',
       client_secret: `${process.env.CLIENT_SECRET}`,
       state: 'login',
@@ -104,7 +104,7 @@ export class SocialService {
     const kakao = {
       clientid: `${process.env.CLIENTID}`, //REST API
       // redirectUri: 'http://localhost:3000/main',
-      redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+      redirectUri: 'https://www.mafiyang.com/main',
     };
     // console.log('kakao Client_ID :', kakao.clientid) //undefined
     const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakao.clientid}&redirect_uri=${kakao.redirectUri}`;
@@ -115,7 +115,7 @@ export class SocialService {
     const kakao = {
       clientid: `${process.env.CLIENTID}`, //REST API
       // redirectUri: 'http://localhost:3000/main',
-      redirectUri: 'https://d191gfhy5yq8br.cloudfront.net/main',
+      redirectUri: 'https://www.mafiyang.com/main',
     };
 
     const { code } = query;
