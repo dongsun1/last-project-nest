@@ -5,11 +5,14 @@ import { Request, Response } from 'express';
 
 export class HttpsRedirectMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: () => void){
-    if(!req.secure){
-      const httpsUrl = `https://${req.hostname}${req.originalUrl}`;
-      res.redirect(HttpStatus.PERMANENT_REDIRECT, httpsUrl)
-    }else{
+    const httpsPort = 3001
+    if(req.secure){
       next();
+    }else{
+      const httpsUrl = `https://${req.hostname}:${httpsPort}${req.url}`;
+      // res.redirect(HttpStatus.PERMANENT_REDIRECT, httpsUrl)
+      res.redirect(httpsUrl)
+
     }
   }
 }
