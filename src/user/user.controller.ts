@@ -22,7 +22,7 @@ export class UserController {
   @Get('logout')
   async logout(@Res() res: any) {
     const { userId } = res.locals.user;
-    return await this.userService.login(userId);
+    return await this.userService.logout(userId);
   }
 
   @Get('loginCheck')

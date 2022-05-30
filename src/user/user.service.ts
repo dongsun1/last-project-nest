@@ -151,9 +151,7 @@ export class UserService {
     const { userId, userPw } = loginData;
     const user = await this.userModel.findOne({ userId });
 
-    const unHashPw = bcrypt.compareSync(userPw, user.userPw);
-    // userId, password 없는경우
-    if (user.userId !== userId || unHashPw == false) {
+    if (!user) {
       throw new HttpException(
         {
           status: HttpStatus.BAD_REQUEST,
@@ -161,6 +159,17 @@ export class UserService {
         },
         HttpStatus.BAD_REQUEST,
       );
+    } else {
+      const unHashPw = bcrypt.compareSync(userPw, user.userPw);
+      if (unHashPw === false) {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            errorMessage: '아이디 또는 비밀번호가 틀렸습니다.',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
     }
 
     const token = jwt.sign({ userId: user.userId }, `${process.env.KEY}`);
@@ -351,7 +360,7 @@ export class UserService {
     };
     transporter.sendMail(emailOptions, (err, info) => {
       if (err) {
-        console.log('sendMail :',err);
+        console.log('sendMail :', err);
       } else {
         console.log('email 전송 완료 : ' + info.response);
       }

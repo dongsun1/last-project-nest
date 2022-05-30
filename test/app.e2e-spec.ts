@@ -2,17 +2,51 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from './../src/app.module';
+import { Model, Connection } from 'mongoose';
+import {
+  TestDocumentDatabaseModule,
+  closeInMongodConnection,
+} from '../src/test-database.module';
+import { User, UserSchema } from '../src/schemas/user/user.schema';
+import {
+  getModelToken,
+  MongooseModule,
+  getConnectionToken,
+} from '@nestjs/mongoose';
+import { UserService } from '../src/user/user.service';
 
 describe('AppController (e2e)', () => {
+  let service: UserService;
   let app: INestApplication;
+  let connection: Connection;
+  let userModel: Model<User>;
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
+      imports: [
+        TestDocumentDatabaseModule,
+        AppModule,
+        MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+      ],
+      providers: [
+        UserService,
+        {
+          provide: getModelToken(User.name),
+          useValue: userModel,
+        },
+      ],
     }).compile();
 
+    service = moduleFixture.get<UserService>(UserService);
     app = moduleFixture.createNestApplication();
+    userModel = moduleFixture.get<Model<User>>(getModelToken(User.name));
+    connection = await moduleFixture.get(getConnectionToken());
     await app.init();
+  });
+
+  afterAll(async () => {
+    await connection.close(true);
+    await closeInMongodConnection();
   });
 
   it('/ (GET)', () => {
@@ -20,5 +54,190 @@ describe('AppController (e2e)', () => {
       .get('/')
       .expect(200)
       .expect('Hello World!');
+  });
+
+  describe('/user', () => {
+    it('/register (POST) success', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(201);
+    });
+
+    it('/register (POST) 아이디를 입력하세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: '',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 아이디는 4~15자 영문 및 숫자만 가능합니다.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 이메일을 입력하세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: '',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 이메일 형식을 올바르게 입력해주세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 닉네임을 입력하세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: '',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 닉네임은 2~15자, 한글,영문 및 숫자만 가능합니다.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test!!!',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 이미 가입된 아이디,닉네임 또는 이메일 입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test1234',
+          userNick: 'test!!!',
+        })
+        .expect(400);
+    });
+
+    it('/login (POST)', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      // request(app.getHttpServer())
+      //   .post('/user/login')
+      //   .send({
+      //     userId: 'test1234',
+      //     userPw: 'test1234',
+      //   })
+      //   .expect(201);
+
+      return request(app.getHttpServer())
+        .post('/user/login')
+        .send({
+          userId: 'test',
+          userPw: 'test',
+        })
+        .expect(400);
+    });
+
+    // it('/logout (GET)', async () => {
+    //   await service.register({
+    //     userId: 'test1234',
+    //     email: 'test1234@test1234.com',
+    //     userPw: 'test1234',
+    //     userPwCheck: 'test1234',
+    //     userNick: 'test1234',
+    //   });
+    //   const loginData = {
+    //     userId: 'test1234',
+    //     userPw: 'test1234',
+    //   };
+    //   const loginUser = await service.login(loginData);
+
+    //   return request(app.getHttpServer())
+    //     .get('/user/logout')
+    //     .set('Authorization', `Bearer ${loginUser.token}`)
+    //     .expect(200);
+    // });
+
+    it('/gameRecord', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      const loginUser = await service.login(loginData);
+
+      request(app.getHttpServer())
+        .get('/user/gameRecord')
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(200);
+
+      request(app.getHttpServer())
+        .get('/user/gameRecord')
+        .set('Authorization', `Bearer test`)
+        .expect(400);
+    });
   });
 });

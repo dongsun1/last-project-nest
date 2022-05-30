@@ -11,7 +11,7 @@ import { Model, Connection } from 'mongoose';
 import {
   TestDocumentDatabaseModule,
   closeInMongodConnection,
-} from './test-database.module';
+} from '../test-database.module';
 
 describe('UserService', () => {
   let service: UserService;
