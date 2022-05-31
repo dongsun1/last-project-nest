@@ -5,6 +5,7 @@ import { AppService, HttpsRedirectMiddleware } from './app.service';
 import { SocialModule } from './social/social.module';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
+import { EventsModule } from './events/event.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ConfigModule } from '@nestjs/config';
     }),
     UserModule,
     SocialModule,
+    EventsModule
   ],
   controllers: [AppController],
   providers: [AppService],
@@ -22,7 +24,5 @@ import { ConfigModule } from '@nestjs/config';
 
 export class AppModule {
   configure(consumer: MiddlewareConsumer)
-{
-    consumer.apply(HttpsRedirectMiddleware).forRoutes("*");
-}
+    {consumer.apply(HttpsRedirectMiddleware).forRoutes("*")};
 }
