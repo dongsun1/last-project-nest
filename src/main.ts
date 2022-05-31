@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { SocketIoAdapter } from './adapters/socket-io.adapters';
 
 import * as fs from 'fs';
 import * as http from 'http';
@@ -18,10 +19,14 @@ async function bootstrap() {
   app.enableCors();
   await app.init();
 
-  // http.createServer(server).listen(3000, () => {
-  //   console.log('3000번 포트로 서버가 켜졌어요.');
-  // });
-  https.createServer(httpsOptions, server).listen(3001, () => {
+  const httpServer = http.createServer(server);
+  const httpsServer = https.createServer(httpsOptions, server);
+  app.useWebSocketAdapter(new SocketIoAdapter(app));
+
+  httpServer.listen(3000, () => {
+    console.log('3000번 포트로 서버가 켜졌어요.');
+  });
+  httpsServer.listen(3001, () => {
     console.log('3001번 포트로 서버가 켜졌어요.');
   });
 }

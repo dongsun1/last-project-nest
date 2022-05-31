@@ -3,14 +3,15 @@ import { Request, Response } from 'express';
 
 @Injectable()
 // export class HttpsRedirectMiddleware implements NestMiddleware {
-//   use(req: Request, res: Response, next: () => void) {
-//     const httpsPort = 3001;
-//     if (req.secure) {
+//   use(req: Request, res: Response, next: () => void){
+//     const httpsPort = 3001
+//     if(req.secure){
 //       next();
-//     } else {
+//     }else{
 //       const httpsUrl = `https://${req.hostname}:${httpsPort}${req.url}`;
 //       // res.redirect(HttpStatus.PERMANENT_REDIRECT, httpsUrl)
-//       res.redirect(httpsUrl);
+//       res.redirect(httpsUrl)
+
 //     }
 //   }
 // }

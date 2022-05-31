@@ -16,7 +16,12 @@ import { Job, JobDocument } from 'src/schemas/game/job.schema';
 import { User, UserDocument } from './../schemas/user/user.schema';
 import { Vote, VoteDocument } from './../schemas/game/vote.schema';
 
-@WebSocketGateway(5000, {
+// @WebSocketGateway(5000, {
+//   cors: {
+//     origin: '*',
+//   },
+// })
+@WebSocketGateway({
   cors: {
     origin: '*',
   },
