@@ -21,6 +21,7 @@ import { Vote, VoteDocument } from './../schemas/game/vote.schema';
     origin: '*',
   },
 })
+
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
