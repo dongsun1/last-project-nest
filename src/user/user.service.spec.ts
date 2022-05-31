@@ -669,6 +669,29 @@ describe('UserService', () => {
   });
 
   describe('changePw', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      try {
+        const changePwData = {
+          userId: 'test',
+          email: 'test@test.com',
+          password: 'temporaryPw12',
+          newPw: 'changePw12',
+          newPwCheck: 'changePw12',
+        };
+        await service.changePw(changePwData);
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('존재하지 않는 아이디입니다.');
+      }
+    });
+
     it('임시 비밀번호가 틀렸습니다.', async () => {
       await service.register({
         userId: 'test1234',
@@ -718,7 +741,7 @@ describe('UserService', () => {
     });
 
     it('비밀번호 변경 완료', async () => {
-      const register = await service.register({
+      await service.register({
         userId: 'test1234',
         email: 'test@test.com',
         userPw: 'temporaryPw12',
@@ -733,22 +756,9 @@ describe('UserService', () => {
         newPwCheck: 'changePw12',
         userNick: 'test1234',
       };
-      const result = {
-        userId: 'test1234',
-        email: 'test@test.com',
-        password: 'temporaryPw12',
-        newPw: 'changePw12',
-        newPwCheck: 'changePw12',
-        userNick: 'test1234',
-      };
 
-      await service.changePw(changePwData);
-      expect(changePwData).toEqual(result);
+      const result = await service.changePw(changePwData);
+      expect(result).toEqual('비밀번호 변경 완료');
     });
-  });
-
-  afterAll(async () => {
-    await connection.close(true);
-    await closeInMongodConnection();
   });
 });

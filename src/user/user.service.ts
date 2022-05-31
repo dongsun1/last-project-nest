@@ -371,11 +371,6 @@ export class UserService {
         '<h3 style="color: crimson;">임시 비밀번호로 로그인 하신 후, 반드시 비밀번호를 수정해 주세요.</h3>',
     };
     transporter.sendMail(emailOptions, (err, info) => {
-      if (err) {
-        console.log('sendMail :', err);
-      } else {
-        console.log('email 전송 완료 : ' + info.response);
-      }
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
@@ -391,7 +386,20 @@ export class UserService {
   async changePw(changePw: ChangePwDto) {
     const { userId, password, newPw, newPwCheck } = changePw;
     const userInfo = await this.userModel.findOne({ userId });
-    const unHashPw = bcrypt.compareSync(password, userInfo.userPw);
+
+    let unHashPw;
+
+    if (userInfo) {
+      unHashPw = bcrypt.compareSync(password, userInfo.userPw);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '존재하지 않는 아이디입니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     if (unHashPw == false) {
       throw new HttpException(
