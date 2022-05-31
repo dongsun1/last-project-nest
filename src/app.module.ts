@@ -7,6 +7,7 @@ import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { EventsModule } from './events/event.module';
 import { AppService } from './app.service';
+// import { EventsGateway } from './events/events.gateway';
 
 
 @Module({
@@ -18,7 +19,8 @@ import { AppService } from './app.service';
     }),
     UserModule,
     SocialModule,
-    EventsModule
+    EventsModule,
+    // EventsGateway
   ],
   controllers: [AppController],
   providers: [AppService],

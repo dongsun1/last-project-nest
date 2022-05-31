@@ -16,16 +16,16 @@ import { Job, JobDocument } from 'src/schemas/game/job.schema';
 import { User, UserDocument } from './../schemas/user/user.schema';
 import { Vote, VoteDocument } from './../schemas/game/vote.schema';
 
-@WebSocketGateway(5000, {
-  cors: {
-    origin: '*',
-  },
-})
-// @WebSocketGateway({
+// @WebSocketGateway(5000, {
 //   cors: {
 //     origin: '*',
 //   },
 // })
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
@@ -35,6 +35,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @InjectModel(Vote.name) private voteModel: Model<VoteDocument>,
   ) {}
   client: Record<string, any>;
+
+
+  // afterInit(Server: 3000) {
+  // }
 
   @WebSocketServer()
   io: Server;
