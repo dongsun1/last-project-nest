@@ -196,7 +196,13 @@ export class UserService {
     if (result.modifiedCount === 1) {
       return { msg: '로그아웃 성공' };
     } else {
-      return { msg: '로그아웃 실패' };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '로그아웃 실패',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -220,9 +226,13 @@ export class UserService {
         userLose: userRecord.userLose,
       };
     } else {
-      return {
-        msg: '게임 전적 조회 실패',
-      };
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '게임 전적 조회 실패',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
@@ -232,10 +242,14 @@ export class UserService {
 
     const searchInfo = await this.userModel.findOne({ userId: friendUser });
 
-    let msg = '';
     if (searchInfo == null || searchInfo == undefined) {
-      msg = '존재하지 않는 아이디입니다.';
-      return msg;
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '존재하지 않는 아이디입니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     } else {
       const existFriend = await this.userModel.find(
         { userId: loginUser },
@@ -243,39 +257,38 @@ export class UserService {
       );
 
       if (existFriend[0].friendList.length !== 0) {
-        msg = '이미 추가된 친구입니다.';
-        return msg;
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            errorMessage: '이미 추가된 친구입니다.',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
       } else {
         await this.userModel.updateOne(
           { userId: loginUser },
           { $push: { friendList: { userId: friendUser } } },
         );
-        msg = '친구추가 완료';
-        return msg;
       }
     }
+    return '친구추가 완료';
   }
 
   // Friend Remove
   async friendRemove(removeUser: string, user: User) {
     const loginUser = user.userId;
-    let msg = '';
     await this.userModel.updateOne(
       { userId: loginUser },
       { $pull: { friendList: { userId: removeUser } } },
     );
-    msg = '삭제완료';
-    return msg;
+    return '삭제완료';
   }
 
   // Friend List
   async friendList(user: User) {
     const userId = user.userId;
-    // console.log('friendList userId :', userId)
-    const userInfo = await this.userModel.findOne({ userId: userId });
-    // console.log('friendList UserInfo:', userInfo)
+    const userInfo = await this.userModel.findOne({ userId });
     const friendList = userInfo.friendList;
-    // console.log('friendList:',friendList)
 
     return friendList;
   }
@@ -284,7 +297,6 @@ export class UserService {
   async findPw(findPw: FindPwDto) {
     const { email, userId } = findPw;
     const userInfo = await this.userModel.findOne({ userId, email });
-    // console.log('findPw userInfo:', userInfo)
 
     const emailReg =
       /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
@@ -359,11 +371,6 @@ export class UserService {
         '<h3 style="color: crimson;">임시 비밀번호로 로그인 하신 후, 반드시 비밀번호를 수정해 주세요.</h3>',
     };
     transporter.sendMail(emailOptions, (err, info) => {
-      if (err) {
-        console.log('sendMail :', err);
-      } else {
-        console.log('email 전송 완료 : ' + info.response);
-      }
       transporter.close();
     });
     const hashedPw = await bcrypt.hash(randomPassword, 10);
@@ -379,7 +386,20 @@ export class UserService {
   async changePw(changePw: ChangePwDto) {
     const { userId, password, newPw, newPwCheck } = changePw;
     const userInfo = await this.userModel.findOne({ userId });
-    const unHashPw = bcrypt.compareSync(password, userInfo.userPw);
+
+    let unHashPw;
+
+    if (userInfo) {
+      unHashPw = bcrypt.compareSync(password, userInfo.userPw);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          errorMessage: '존재하지 않는 아이디입니다.',
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
 
     if (unHashPw == false) {
       throw new HttpException(

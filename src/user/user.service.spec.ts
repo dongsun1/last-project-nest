@@ -376,8 +376,12 @@ describe('UserService', () => {
         userPw: 'test1234',
       };
       await service.login(loginData);
-      const result = await service.logout(loginData.userId + ' ');
-      expect(result.msg).toEqual('로그아웃 실패');
+      try {
+        await service.logout(loginData.userId);
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('로그아웃 실패');
+      }
     });
 
     it('로그아웃 실패', async () => {
@@ -389,8 +393,12 @@ describe('UserService', () => {
         userNick: 'test1234',
       });
 
-      const result = await service.logout('test1234');
-      expect(result.msg).toEqual('로그아웃 실패');
+      try {
+        await service.logout('test1234');
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('로그아웃 실패');
+      }
     });
   });
 
@@ -433,8 +441,13 @@ describe('UserService', () => {
         userPwCheck: 'test1234',
         userNick: 'test1234',
       });
-      const result = await service.gameRecord(register.userId + ' ');
-      expect(result.msg).toEqual('게임 전적 조회 실패');
+
+      try {
+        await service.gameRecord(register.userId + ' ');
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('게임 전적 조회 실패');
+      }
     });
   });
 
@@ -449,8 +462,13 @@ describe('UserService', () => {
       });
 
       const user = await service.findUser('test1');
-      const result = await service.friendAdd('test2', user);
-      expect(result).toEqual('존재하지 않는 아이디입니다.');
+
+      try {
+        await service.friendAdd('test2', user);
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('존재하지 않는 아이디입니다.');
+      }
     });
 
     it('이미 추가된 친구입니다.', async () => {
@@ -471,8 +489,13 @@ describe('UserService', () => {
 
       const user = await service.findUser('test1');
       await service.friendAdd('test2', user);
-      const result = await service.friendAdd('test2', user);
-      expect(result).toEqual('이미 추가된 친구입니다.');
+
+      try {
+        await service.friendAdd('test2', user);
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('이미 추가된 친구입니다.');
+      }
     });
 
     it('친구추가 완료', async () => {
@@ -646,6 +669,29 @@ describe('UserService', () => {
   });
 
   describe('changePw', () => {
+    it('존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      try {
+        const changePwData = {
+          userId: 'test',
+          email: 'test@test.com',
+          password: 'temporaryPw12',
+          newPw: 'changePw12',
+          newPwCheck: 'changePw12',
+        };
+        await service.changePw(changePwData);
+      } catch (e) {
+        expect(e.response.status).toEqual(HttpStatus.BAD_REQUEST);
+        expect(e.response.errorMessage).toEqual('존재하지 않는 아이디입니다.');
+      }
+    });
+
     it('임시 비밀번호가 틀렸습니다.', async () => {
       await service.register({
         userId: 'test1234',
@@ -695,7 +741,7 @@ describe('UserService', () => {
     });
 
     it('비밀번호 변경 완료', async () => {
-      const register = await service.register({
+      await service.register({
         userId: 'test1234',
         email: 'test@test.com',
         userPw: 'temporaryPw12',
@@ -710,22 +756,9 @@ describe('UserService', () => {
         newPwCheck: 'changePw12',
         userNick: 'test1234',
       };
-      const result = {
-        userId: 'test1234',
-        email: 'test@test.com',
-        password: 'temporaryPw12',
-        newPw: 'changePw12',
-        newPwCheck: 'changePw12',
-        userNick: 'test1234',
-      };
 
-      await service.changePw(changePwData);
-      expect(changePwData).toEqual(result);
+      const result = await service.changePw(changePwData);
+      expect(result).toEqual('비밀번호 변경 완료');
     });
-  });
-
-  afterAll(async () => {
-    await connection.close(true);
-    await closeInMongodConnection();
   });
 });

@@ -1,4 +1,3 @@
-import { JobSchema } from './../schemas/game/job.schema';
 import { VoteDto } from './dto/vote.dto';
 import { CreateRoomDto } from './dto/createRoom.dto';
 import { InjectModel } from '@nestjs/mongoose';
@@ -11,8 +10,8 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Model } from 'mongoose';
-import { Room, RoomDocument } from 'src/schemas/game/room.schema';
-import { Job, JobDocument } from 'src/schemas/game/job.schema';
+import { Room, RoomDocument } from './../schemas/game/room.schema';
+import { Job, JobDocument } from './../schemas/game/job.schema';
 import { User, UserDocument } from './../schemas/user/user.schema';
 import { Vote, VoteDocument } from './../schemas/game/vote.schema';
 

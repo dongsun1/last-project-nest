@@ -4,6 +4,8 @@ import { LoginUserDto } from './dto/login-user.dto';
 import { SignUpUserDto } from './../user/dto/signup-user.dto';
 import { UserService } from './user.service';
 import { Body, Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
+import { FriendUserDto } from './dto/friendAdd.dto';
+import { RemoveUserDto } from './dto/friendRemove.dto';
 
 @Controller('user')
 export class UserController {
@@ -22,7 +24,8 @@ export class UserController {
   @Get('logout')
   async logout(@Res() res: any) {
     const { userId } = res.locals.user;
-    return await this.userService.logout(userId);
+    const result = await this.userService.logout(userId);
+    res.status(HttpStatus.OK).send(result);
   }
 
   @Get('loginCheck')
@@ -38,15 +41,18 @@ export class UserController {
   }
 
   @Post('friendAdd')
-  async friendAdd(@Body() friendUser: string, @Res() res: any) {
-    const msg = await this.userService.friendAdd(friendUser, res.locals.user);
+  async friendAdd(@Body() friendUser: FriendUserDto, @Res() res: any) {
+    const msg = await this.userService.friendAdd(
+      friendUser.friendUser,
+      res.locals.user,
+    );
     res.status(HttpStatus.OK).send(msg);
   }
 
   @Post('friendRemove')
-  async friendRemove(@Body() removeUser: string, @Res() res: any) {
+  async friendRemove(@Body() removeUser: RemoveUserDto, @Res() res: any) {
     const msg = await this.userService.friendRemove(
-      removeUser,
+      removeUser.removeUser,
       res.locals.user,
     );
     res.status(HttpStatus.OK).send(msg);

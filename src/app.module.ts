@@ -8,7 +8,6 @@ import { ConfigModule } from '@nestjs/config';
 import { EventsModule } from './events/event.module';
 import { AppService } from './app.service';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -18,12 +17,11 @@ import { AppService } from './app.service';
     }),
     UserModule,
     SocialModule,
-    EventsModule
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {
   // configure(consumer: MiddlewareConsumer)
   //   {consumer.apply(HttpsRedirectMiddleware).forRoutes("*")};
