@@ -21,7 +21,7 @@ async function bootstrap() {
 
   const httpServer = http.createServer(server);
   const httpsServer = https.createServer(httpsOptions, server);
-  app.useWebSocketAdapter(new SocketIoAdapter(app));
+  app.useWebSocketAdapter(new SocketIoAdapter(httpServer));
 
   httpServer.listen(3000, () => {
     console.log('3000번 포트로 서버가 켜졌어요.');
