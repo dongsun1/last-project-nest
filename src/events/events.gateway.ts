@@ -21,7 +21,8 @@ import { Vote, VoteDocument } from './../schemas/game/vote.schema';
 //     origin: '*',
 //   },
 // })
-@WebSocketGateway({
+@WebSocketGateway(5000,{
+  transports: ['websocket'],
   cors: {
     origin: '*',
   },
