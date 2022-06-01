@@ -2,7 +2,6 @@ import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response } from 'express';
 
 @Injectable()
-
 // export class HttpsRedirectMiddleware implements NestMiddleware {
 //   use(req: Request, res: Response, next: () => void){
 //     const httpsPort = 3001
@@ -16,7 +15,6 @@ import { Request, Response } from 'express';
 //     }
 //   }
 // }
-
 export class AppService {
   getHello(): string {
     return 'Hello World!';

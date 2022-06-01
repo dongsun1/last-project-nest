@@ -143,7 +143,7 @@ describe('AppController (e2e)', () => {
           email: 'test@test.com',
           userPw: 'test1234',
           userPwCheck: 'test1234',
-          userNick: 'test!!!',
+          userNick: '!@#!@#',
         })
         .expect(400);
     });
@@ -169,7 +169,59 @@ describe('AppController (e2e)', () => {
         .expect(400);
     });
 
-    it('/login (POST)', async () => {
+    it('/register (POST) 비밀번호를 입력하세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: '',
+          userPwCheck: 'test1234',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 비밀번호 확인란을 입력하세요.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: '',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 4~15자, 영문 및 숫자만 가능합니다.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: '!@#$!@#$',
+          userPwCheck: '!@#$!@#$',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/register (POST) 비밀번호가 비밀번호 확인란과 일치하지 않습니다.', () => {
+      return request(app.getHttpServer())
+        .post('/user/register')
+        .send({
+          userId: 'test1234',
+          email: 'test@test.com',
+          userPw: 'test1234',
+          userPwCheck: 'test4321',
+          userNick: 'test1234',
+        })
+        .expect(400);
+    });
+
+    it('/login (POST) success', async () => {
       await service.register({
         userId: 'test1234',
         email: 'test1234@test1234.com',
@@ -178,44 +230,52 @@ describe('AppController (e2e)', () => {
         userNick: 'test1234',
       });
 
-      // request(app.getHttpServer())
-      //   .post('/user/login')
-      //   .send({
-      //     userId: 'test1234',
-      //     userPw: 'test1234',
-      //   })
-      //   .expect(201);
+      return request(app.getHttpServer())
+        .post('/user/login')
+        .send({
+          userId: 'test1234',
+          userPw: 'test1234',
+        })
+        .expect(201);
+    });
+
+    it('/login (POST) 아이디 또는 비밀번호가 틀렸습니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
 
       return request(app.getHttpServer())
         .post('/user/login')
         .send({
-          userId: 'test',
+          userId: 'test1234',
           userPw: 'test',
         })
         .expect(400);
     });
 
-    // it('/logout (GET)', async () => {
-    //   await service.register({
-    //     userId: 'test1234',
-    //     email: 'test1234@test1234.com',
-    //     userPw: 'test1234',
-    //     userPwCheck: 'test1234',
-    //     userNick: 'test1234',
-    //   });
-    //   const loginData = {
-    //     userId: 'test1234',
-    //     userPw: 'test1234',
-    //   };
-    //   const loginUser = await service.login(loginData);
+    it('/login (POST) 아이디 또는 비밀번호가 틀렸습니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
 
-    //   return request(app.getHttpServer())
-    //     .get('/user/logout')
-    //     .set('Authorization', `Bearer ${loginUser.token}`)
-    //     .expect(200);
-    // });
+      return request(app.getHttpServer())
+        .post('/user/login')
+        .send({
+          userId: 'test',
+          userPw: 'test1234',
+        })
+        .expect(400);
+    });
 
-    it('/gameRecord', async () => {
+    it('/logout (GET) success', async () => {
       await service.register({
         userId: 'test1234',
         email: 'test1234@test1234.com',
@@ -229,14 +289,439 @@ describe('AppController (e2e)', () => {
       };
       const loginUser = await service.login(loginData);
 
-      request(app.getHttpServer())
+      return request(app.getHttpServer())
+        .get('/user/logout')
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(200);
+    });
+
+    it('/logout (GET) fail', async () => {
+      return request(app.getHttpServer())
+        .get('/user/logout')
+        .set('Authorization', `Bearer test`)
+        .expect(400);
+    });
+
+    it('/gameRecord (GET) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
         .get('/user/gameRecord')
         .set('Authorization', `Bearer ${loginUser.token}`)
         .expect(200);
+    });
 
-      request(app.getHttpServer())
+    it('/gameRecord (GET) fail', async () => {
+      return request(app.getHttpServer())
         .get('/user/gameRecord')
         .set('Authorization', `Bearer test`)
+        .expect(400);
+    });
+
+    it('/friendAdd (POST) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      await service.register({
+        userId: 'test123',
+        email: 'test123@test123.com',
+        userPw: 'test123',
+        userPwCheck: 'test123',
+        userNick: 'test123',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/friendAdd')
+        .send({ friendUser: 'test123' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(200);
+    });
+
+    it('/friendAdd (POST) 존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/friendAdd')
+        .send({ friendUser: 'test123' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/friendAdd (POST) 이미 추가된 친구입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      await service.register({
+        userId: 'test123',
+        email: 'test123@test123.com',
+        userPw: 'test123',
+        userPwCheck: 'test123',
+        userNick: 'test123',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+      const loginUser = await service.login(loginData);
+      const user = await service.findUser('test1234');
+      await service.friendAdd('test123', user);
+
+      return request(app.getHttpServer())
+        .post('/user/friendAdd')
+        .send({ friendUser: 'test123' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/friendRemove (POST) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      await service.register({
+        userId: 'test123',
+        email: 'test123@test123.com',
+        userPw: 'test123',
+        userPwCheck: 'test123',
+        userNick: 'test123',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+      const user = await service.findUser('test1234');
+
+      await service.friendAdd('test123', user);
+
+      return request(app.getHttpServer())
+        .post('/user/friendRemove')
+        .send({ friendUser: 'test123' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(200);
+    });
+
+    it('/friendList (POST) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      await service.register({
+        userId: 'test123',
+        email: 'test123@test123.com',
+        userPw: 'test123',
+        userPwCheck: 'test123',
+        userNick: 'test123',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+      const user = await service.findUser('test1234');
+
+      await service.friendAdd('test123', user);
+
+      return request(app.getHttpServer())
+        .post('/user/friendList')
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(200);
+    });
+
+    it('/findPw (POST) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/findPw')
+        .send({ userId: 'test1234', email: 'test1234@test1234.com' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(201);
+    });
+
+    it('/findPw (POST) 아이디를 입력하세요.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/findPw')
+        .send({ userId: '', email: 'test1234@test1234.com' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/findPw (POST) 이메일을 입력하세요.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/findPw')
+        .send({ userId: 'test1234', email: '' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/findPw (POST) 이메일 형식을 올바르게 입력해주세요.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/findPw')
+        .send({ userId: 'test1234', email: 'test1234' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/findPw (POST) 이메일 형식을 올바르게 입력해주세요.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      return request(app.getHttpServer())
+        .post('/user/findPw')
+        .send({ userId: 'test4321', email: 'test1234' })
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/changePw (POST) success', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      const changePwData = {
+        userId: 'test1234',
+        email: 'test@test.com',
+        password: 'test1234',
+        newPw: 'changePw12',
+        newPwCheck: 'changePw12',
+        userNick: 'test1234',
+      };
+
+      return request(app.getHttpServer())
+        .post('/user/changePw')
+        .send(changePwData)
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(201);
+    });
+
+    it('/changePw (POST) 존재하지 않는 아이디입니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      const changePwData = {
+        userId: 'test4321',
+        email: 'test@test.com',
+        password: 'test1234',
+        newPw: 'changePw12',
+        newPwCheck: 'changePw12',
+        userNick: 'test1234',
+      };
+
+      return request(app.getHttpServer())
+        .post('/user/changePw')
+        .send(changePwData)
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/changePw (POST) 임시 비밀번호가 틀렸습니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      const changePwData = {
+        userId: 'test1234',
+        email: 'test@test.com',
+        password: 'test4321',
+        newPw: 'changePw12',
+        newPwCheck: 'changePw12',
+        userNick: 'test1234',
+      };
+
+      return request(app.getHttpServer())
+        .post('/user/changePw')
+        .send(changePwData)
+        .set('Authorization', `Bearer ${loginUser.token}`)
+        .expect(400);
+    });
+
+    it('/changePw (POST) 새 비밀번호와 새 비밀번호 확인란이 일치하지 않습니다.', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test1234@test1234.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+
+      const loginData = {
+        userId: 'test1234',
+        userPw: 'test1234',
+      };
+
+      const loginUser = await service.login(loginData);
+
+      const changePwData = {
+        userId: 'test1234',
+        email: 'test@test.com',
+        password: 'test1234',
+        newPw: 'changePw1234',
+        newPwCheck: 'changePw4321',
+        userNick: 'test1234',
+      };
+
+      return request(app.getHttpServer())
+        .post('/user/changePw')
+        .send(changePwData)
+        .set('Authorization', `Bearer ${loginUser.token}`)
         .expect(400);
     });
   });

@@ -9,7 +9,6 @@ import { EventsModule } from './events/event.module';
 import { AppService } from './app.service';
 // import { EventsGateway } from './events/events.gateway';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -20,12 +19,10 @@ import { AppService } from './app.service';
     UserModule,
     SocialModule,
     EventsModule,
-    // EventsGateway
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-
 export class AppModule {
   // configure(consumer: MiddlewareConsumer)
   //   {consumer.apply(HttpsRedirectMiddleware).forRoutes("*")};
