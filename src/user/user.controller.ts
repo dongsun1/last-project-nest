@@ -6,6 +6,7 @@ import { UserService } from './user.service';
 import { Body, Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
 import { FriendUserDto } from './dto/friendAdd.dto';
 import { RemoveUserDto } from './dto/friendRemove.dto';
+import { ProfileDto } from './dto/profile.dto';
 
 @Controller('user')
 export class UserController {
@@ -72,5 +73,18 @@ export class UserController {
   @Post('changePw')
   async changePw(@Body() changePw: ChangePwDto) {
     return await this.userService.changePw(changePw);
+  }
+
+  @Get('profile')
+  async getProfile(@Res() res: any){
+    const userData =  await this.userService.getProfile(res.locals.user);
+    res.status(HttpStatus.OK).send(userData);
+  }
+
+  @Post('profile')
+  async postProfile(@Body() userProfile: ProfileDto, @Res() res: any){
+    const userData = await this.userService.postProfile(res.locals.user, userProfile);
+    res.status(HttpStatus.OK).send(userData);
+
   }
 }

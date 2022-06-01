@@ -17,19 +17,19 @@ export class User {
   @Prop()
   userNick: string;
 
-  @Prop()
+  @Prop({ default : '0'})
   userProfile: string;
 
-  @Prop()
+  @Prop({ default : 0 })
   userWin: number;
 
-  @Prop()
+  @Prop({ default : 0 })
   userLose: number;
 
   @Prop()
   from: string;
 
-  @Prop()
+  @Prop({ default : [] })
   friendList: [];
 
   @Prop({ default: false })
