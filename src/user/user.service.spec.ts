@@ -773,13 +773,12 @@ describe('UserService', () => {
       });
       const user = await service.findUser('test1234');
       console.log('getProfile user: ', user);
-      const userProfil = user.userProfile;
+      const userProfile = user.userProfile;
       const ProfileResult = await service.getProfile(user);
-      let result = true;
-      expect(ProfileResult).toEqual({result, profile:userProfil});
-
+      const result = true;
+      expect(ProfileResult).toEqual({ result, profile: userProfile });
     });
-  })
+  });
 
   describe('postProfile', () => {
     it('profile 수정', async () => {
@@ -791,13 +790,13 @@ describe('UserService', () => {
         userNick: 'test1234',
       });
       const postProfile = {
-        userProfile: Number(1)
+        userProfile: Number(1),
       };
       const user = await service.findUser('test1234');
       const ProfileResult = await service.postProfile(user, postProfile);
-      let msg = '등록 성공';
-      let result = true;
-      expect(ProfileResult).toEqual({msg, result});
+      const msg = '등록 성공';
+      const result = true;
+      expect(ProfileResult).toEqual({ msg, result });
     });
   });
 });
