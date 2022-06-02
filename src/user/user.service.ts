@@ -9,6 +9,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 import * as nodemailer from 'nodemailer';
+import { ProfileDto } from './dto/profile.dto';
 
 @Injectable()
 export class UserService {
@@ -425,5 +426,46 @@ export class UserService {
       { new: true },
     );
     return '비밀번호 변경 완료';
+  }
+
+  // Profile 조회
+  async getProfile(user: User) {
+    try{
+      const userId = user.userId;
+      // console.log('getProfile userId :', userId)
+      const userProfile = await this.userModel.findOne({ userId })
+      // console.log('userProfile :', userProfile)
+      var result = true;
+      return { result, profile : userProfile.userProfile }
+    } catch(e) {
+      var result = false;
+      var msg = '실패' 
+      return { result, msg }
+    }
+
+  }
+
+  // Profle Modify
+  async postProfile(user: User, Profile: ProfileDto) {
+    try{
+      const userId = user.userId;
+      // console.log('Profile userId :', userId);
+      const { userProfile } = Profile;
+      // console.log('userProfile :', userProfile);
+      await this.userModel.findOneAndUpdate(
+        { userId: userId },
+        { $set: { userProfile: Number(userProfile) } },
+        { new: true },
+      );
+      let result = true;
+      let msg = '등록 성공'
+      return {result, msg};
+
+    }catch (error) {
+      console.log(error);
+      let result = false;
+      let msg = '등록 실패'
+      return {result, msg}
+    }
   }
 }

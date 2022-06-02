@@ -761,4 +761,43 @@ describe('UserService', () => {
       expect(result).toEqual('비밀번호 변경 완료');
     });
   });
+
+  describe('getProfile', () => {
+    it('profile 조회', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const user = await service.findUser('test1234');
+      console.log('getProfile user: ', user);
+      const userProfil = user.userProfile;
+      const ProfileResult = await service.getProfile(user);
+      let result = true;
+      expect(ProfileResult).toEqual({result, profile:userProfil});
+
+    });
+  })
+
+  describe('postProfile', () => {
+    it('profile 수정', async () => {
+      await service.register({
+        userId: 'test1234',
+        email: 'test@test.com',
+        userPw: 'test1234',
+        userPwCheck: 'test1234',
+        userNick: 'test1234',
+      });
+      const postProfile = {
+        userProfile: Number(1)
+      };
+      const user = await service.findUser('test1234');
+      const ProfileResult = await service.postProfile(user, postProfile);
+      let msg = '등록 성공';
+      let result = true;
+      expect(ProfileResult).toEqual({msg, result});
+    });
+  });
 });
