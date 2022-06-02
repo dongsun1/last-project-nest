@@ -432,9 +432,9 @@ export class UserService {
   async getProfile(user: User) {
     try{
       const userId = user.userId;
-      console.log('getProfile userId :', userId)
+      // console.log('getProfile userId :', userId)
       const userProfile = await this.userModel.findOne({ userId })
-      console.log('userProfile :', userProfile)
+      // console.log('userProfile :', userProfile)
       var result = true;
       return { result, profile : userProfile.userProfile }
     } catch(e) {
@@ -449,9 +449,9 @@ export class UserService {
   async postProfile(user: User, Profile: ProfileDto) {
     try{
       const userId = user.userId;
-      console.log('Profile userId :', userId);
+      // console.log('Profile userId :', userId);
       const { userProfile } = Profile;
-      console.log('userProfile :', userProfile);
+      // console.log('userProfile :', userProfile);
       await this.userModel.findOneAndUpdate(
         { userId: userId },
         { $set: { userProfile: Number(userProfile) } },
