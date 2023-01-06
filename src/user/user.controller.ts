@@ -76,15 +76,17 @@ export class UserController {
   }
 
   @Get('profile')
-  async getProfile(@Res() res: any){
-    const userData =  await this.userService.getProfile(res.locals.user);
+  async getProfile(@Res() res: any) {
+    const userData = await this.userService.getProfile(res.locals.user);
     res.status(HttpStatus.OK).send(userData);
   }
 
   @Post('profile')
-  async postProfile(@Body() userProfile: ProfileDto, @Res() res: any){
-    const userData = await this.userService.postProfile(res.locals.user, userProfile);
+  async postProfile(@Body() userProfile: ProfileDto, @Res() res: any) {
+    const userData = await this.userService.postProfile(
+      res.locals.user,
+      userProfile,
+    );
     res.status(HttpStatus.OK).send(userData);
-
   }
 }

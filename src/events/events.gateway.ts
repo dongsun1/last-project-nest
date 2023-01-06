@@ -33,25 +33,19 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   io: Server;
 
-  public handleConnection(socket: Socket): void {
-    console.log(`connection: ${socket.id}`);
-  }
+  public handleConnection(socket: Socket): void {}
 
-  public handleDisconnect(socket: Socket): void {
-    console.log(`disconnection: ${socket.id}`);
-  }
+  public handleDisconnect(socket: Socket): void {}
 
   // 닉네임 받아오기
   @SubscribeMessage('main')
   main(socket: Socket, userNick: string): void {
-    console.log(`아이디 받아오기: ${userNick}`);
     socket.data.userNick = userNick;
   }
 
   // 방 리스트
   @SubscribeMessage('roomList')
   async roomList(socket: Socket) {
-    console.log('roomList');
     const rooms = await this.roomModel.find({});
     socket.emit('roomList', rooms);
   }
@@ -64,7 +58,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (night.night) {
       // 밤 마피아 채팅
-      console.log(`밤 msg: ${msg}, id: ${socket.data.userId}`);
       const userJob = 'mafia';
       const mafia = await this.jobModel.find({ roomId, userJob });
       for (let i = 0; i < mafia.length; i++) {
@@ -75,7 +68,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
     } else {
       // 낮 채팅
-      console.log(`낮 msg: ${msg}, id: ${socket.data.userNick}`);
       this.io
         .to(socket.data.roomId)
         .emit('msg', { msg, id: socket.data.userNick });
@@ -97,10 +89,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       password: roomPwd,
     });
 
-    console.log(
-      `방 만들기: ${roomId}, ${socket.data.userId}, ${roomTitle}, ${roomPeople}, ${roomPwd}`,
-    );
-
     socket.emit('roomData', room);
   }
 
@@ -116,7 +104,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket.data.userNick = userNick;
     socket.data.streamId = streamId;
     const roomId = socket.data.roomId;
-    console.log(`peerId ${peerId}`);
     socket.broadcast
       .to(roomId)
       .emit('user-connected', peerId, userNick, streamId);
@@ -125,7 +112,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 방 들어가기
   @SubscribeMessage('joinRoom')
   async joinRoom(socket: Socket, roomId: string) {
-    console.log(`${socket.data.userNick}님이 ${roomId}에 입장하셨습니다.`);
     socket.join(roomId);
     socket.data.roomId = roomId;
 
@@ -155,10 +141,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 방 나가기
   @SubscribeMessage('leaveRoom')
   async leaveRoom(socket: Socket) {
-    console.log(
-      `${socket.data.userId}님이 ${socket.data.roomId}에서 퇴장하셨습니다.`,
-    );
-
     const roomId = socket.data.roomId;
     socket.leave(roomId);
 
@@ -201,13 +183,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async ready(socket: Socket, ready: boolean) {
     const roomId = socket.data.roomId;
     if (ready) {
-      console.log(`${socket.data.userId} 준비완료`);
       await this.roomModel.updateOne(
         { roomId },
         { $push: { currentReadyPeople: socket.data.userNick } },
       );
     } else {
-      console.log(`${socket.data.userId} 준비해제`);
       await this.roomModel.updateOne(
         { roomId },
         { $pull: { currentReadyPeople: socket.data.userNick } },
@@ -216,10 +196,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const room = await this.roomModel.findOne({ roomId });
 
-    if (room) {
-      if (room.userId !== socket.data.userNick) {
-        this.io.to(roomId).emit('readyPeople', room.currentReadyPeople);
-      }
+    if (room && room.userId !== socket.data.userNick) {
+      this.io.to(roomId).emit('readyPeople', room.currentReadyPeople);
     }
   }
 
@@ -234,15 +212,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
     const ready = await this.roomModel.findOne({ roomId });
 
-    const readyResult = readyCheck(
-      ready.currentPeople,
-      ready.currentReadyPeople,
-    );
-
     // 모든 사람이 ready를 했을 때
-    if (readyResult) {
-      console.log(`${socket.data.roomId} 게임이 시작되었습니다.`);
-
+    if (ready.currentPeople === ready.currentReadyPeople) {
       socket.emit('ready', true);
       await this.roomModel.updateOne({ roomId }, { $set: { start: true } });
 
@@ -268,62 +239,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       room = await this.roomModel.findOne({ roomId });
 
       const userArr = room.currentPeopleSocketId;
-      // 각 user 직업 부여
-      const job = [];
-      // 1:citizen, 2:doctor, 3:police, 4:mafia, 5:reporter
-      switch (userArr.length) {
-        case 4:
-          job.push(5, 5, 5, 4);
-          break;
-        case 5:
-          job.push(1, 1, 2, 3, 4);
-          break;
-        case 6:
-          job.push(1, 1, 1, 2, 3, 4);
-          break;
-        case 7:
-          job.push(1, 1, 1, 2, 3, 4, 5);
-          break;
-        case 8:
-          job.push(1, 1, 1, 2, 3, 4, 4, 5);
-          break;
-        case 9:
-          job.push(1, 1, 1, 1, 2, 3, 4, 4, 5);
-          break;
-        case 10:
-          job.push(1, 1, 1, 1, 1, 2, 3, 4, 4, 5);
-          break;
-      }
 
-      // job random 부여
-      const jobArr = job.sort(() => Math.random() - 0.5);
-      const playerJob = [];
-      for (let i = 0; i < jobArr.length; i++) {
-        switch (jobArr[i]) {
-          case 1:
-            playerJob.push('citizen');
-            break;
-          case 2:
-            playerJob.push('doctor');
-            break;
-          case 3:
-            playerJob.push('police');
-            break;
-          case 4:
-            playerJob.push('mafia');
-            break;
-          case 5:
-            playerJob.push('reporter');
-            break;
-          case 6:
-            playerJob.push('sniper');
-            break;
-        }
-      }
+      // 각 user 직업 부여
+      const playerJob = createRandomJob(userArr.length);
 
       // 직업 DB 생성
       for (let i = 0; i < userArr.length; i++) {
-        console.log(`직업 부여 ${room.currentPeople[i]}: ${playerJob[i]}`);
         this.io
           .to(userArr[i])
           .emit('getJob', room.currentPeople[i], playerJob[i]);
@@ -382,11 +303,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     i--;
                     continue;
                   }
-                  const save = await this.jobModel.findOne({
+                  const { save } = await this.jobModel.findOne({
                     userNick: currentPeople[random],
                   });
                   // 랜덤이 죽어있을 경우 continue
-                  if (!save.save) {
+                  if (!save) {
                     i--;
                     continue;
                   }
@@ -416,7 +337,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
               if (!room.night) {
                 // 낮 투표 결과
-                console.log(`${roomId} 밤이 되었습니다.`);
                 counter = 60;
 
                 const votes = await this.voteModel.find({ roomId, day: true });
@@ -433,6 +353,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 const diedPeople = await this.jobModel.find({ roomId });
                 const diedPeopleArr = [];
                 const savedPeopleArr = [];
+
                 for (let i = 0; i < diedPeople.length; i++) {
                   if (!diedPeople[i].save) {
                     diedPeopleArr.push(diedPeople[i].userNick);
@@ -444,10 +365,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 const isMafiaUser = await this.jobModel.findOne({
                   userNick: voteResult[0][0],
                 });
-                let isMafia = false;
-                if (isMafiaUser.userJob === 'mafia') {
-                  isMafia = true;
-                }
+                const isMafia = isMafiaUser.userJob === 'mafia';
 
                 if (voteResult.length !== 1) {
                   // 1명만 투표된게 아닐 때
@@ -458,7 +376,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       diedPeopleArr,
                       savedPeopleArr,
                     });
-                    console.log(`아무도 안죽음`);
                   } else {
                     // 투표 동률이 아닐 때
                     this.io.to(socket.data.roomId).emit('dayVoteResult', {
@@ -467,7 +384,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       savedPeopleArr,
                       isMafia,
                     });
-                    console.log(`${voteResult[0][0]} 죽음`);
                     await this.jobModel.updateOne(
                       { roomId, userId: voteResult[0][0] },
                       { $set: { save: false } },
@@ -481,7 +397,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     savedPeopleArr,
                     isMafia,
                   });
-                  console.log(`${voteResult[0][0]} 죽음`);
                   await this.jobModel.updateOne(
                     { roomId, userId: voteResult[0][0] },
                     { $set: { save: false } },
@@ -490,7 +405,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 await this.voteModel.deleteMany({ roomId, day: true });
               } else {
                 // 밤 투표 결과
-                console.log(`${roomId} 낮이 되었습니다.`);
                 counter = 90;
 
                 const votes = await this.voteModel.find({ roomId, day: false });
@@ -505,9 +419,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       { roomId, userId: votes[i].clickedNick },
                       { $set: { save: false } },
                     );
-                    console.log(
-                      `${votes[i].clickedNick}님이 마피아에 의해 살해당했습니다.`,
-                    );
                     died.push(votes[i].clickedNick);
                   }
 
@@ -520,9 +431,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                     await this.jobModel.updateOne(
                       { roomId, userId: votes[i].clickerNick },
                       { $set: { chance: false } },
-                    );
-                    console.log(
-                      `기자가 지목한 ${clickedUser.userNick}의 직업은 ${clickedUser.userJob}입니다.`,
                     );
                     this.io.to(roomId).emit('reporter', {
                       clickerJob: clickedUser.userJob,
@@ -542,9 +450,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                       await this.jobModel.updateOne(
                         { roomId, userId: votes[i].clickedNick },
                         { $set: { save: true } },
-                      );
-                      console.log(
-                        `${votes[i].clickedNick}님이 의사에 의해 치료되었습니다.`,
                       );
                       saved.push(votes[i].clickedNick);
                     }
@@ -623,7 +528,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 }
                 // 타이머 끝내기
                 clearInterval(countdown);
-                console.log(`${roomId} ${msg}`);
                 this.io.to(socket.data.roomId).emit('endGame', { msg });
                 const currentPeople = await this.roomModel.findOne({ roomId });
                 await this.roomModel.updateOne(
@@ -658,7 +562,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
           // 자기소개 시간이 끝났을 때
           first = false;
           counter = 60;
-          console.log(`${roomId} 밤이 되었습니다.`);
           const day = await this.roomModel.findOne({ roomId });
           this.io.to(socket.data.roomId).emit('isNight', !day.night);
           await this.roomModel.updateOne(
@@ -674,7 +577,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         (x) => !ready.currentReadyPeople.includes(x),
       );
 
-      console.log(`${notReadyId} 참가자들이 준비가 되지 않았습니다.`);
       socket.emit('ready', false, notReadyId);
     }
   }
@@ -682,8 +584,6 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // 투표
   @SubscribeMessage('vote')
   async vote(socket: Socket, voteData: VoteDto) {
-    console.log('vote', JSON.stringify(voteData));
-
     const { clickerJob, clickerId, clickedId } = voteData;
 
     const roomId = socket.data.roomId;
@@ -744,10 +644,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
 
         if (clickedUser.userJob === 'mafia') {
-          console.log(`경찰이 지목한 사람은 ${clickedId} 마피아입니다.`);
           socket.emit('police', true);
         } else {
-          console.log(`경찰이 지목한 사람은 ${clickedId} 마피아가 아닙니다.`);
           socket.emit('police', false);
         }
       }
@@ -756,55 +654,90 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 }
 
 function getSortedArr(array: string[]) {
-  // 1. 출연 빈도 구하기
   const counts = array.reduce((pv, cv) => {
     pv[cv] = (pv[cv] || 0) + 1;
     return pv;
   }, {});
-  // 2. 요소와 개수를 표현하는 배열 생성 => [ [요소: 개수], [요소: 개수], ...]
+
   const result = [];
   for (const key in counts) {
     result.push([key, counts[key]]);
   }
-  // 3. 출현 빈도별 정리하기
+
   result.sort((first, second) => {
-    // 정렬 순서 바꾸려면 return first[1] - second[1];
     return second[1] - first[1];
   });
+
   return result;
 }
 
 function endGameCheck(endGame: Job[]) {
-  const jobArr = [];
+  const { mafia, citizen } = endGame.reduce(
+    (acc, { save, userJob }) => {
+      if (save) {
+        if (userJob === 'mafia') acc.mafia++;
+        else acc.citizen--;
+      }
+      return acc;
+    },
+    { mafia: 0, citizen: 0 },
+  );
 
-  for (let i = 0; i < endGame.length; i++) {
-    if (endGame[i].save) {
-      jobArr.push(endGame[i].userJob);
-    }
-  }
-
-  let citizenNum = 0;
-  let mafiaNum = 0;
-  for (let i = 0; i < jobArr.length; i++) {
-    if (jobArr[i] === 'mafia') {
-      mafiaNum++;
-    } else {
-      citizenNum++;
-    }
-  }
-  if (citizenNum <= mafiaNum) {
-    return '마피아 승';
-  }
-  if (mafiaNum === 0) {
-    return '시민 승';
-  }
-  return false;
+  return mafia >= citizen ? '마피아 승' : mafia === 0 ? '시민 승' : false;
 }
 
-function readyCheck(current: string[], ready: string[]) {
-  if (current.length === ready.length) {
-    return true;
-  } else {
-    return false;
+function createRandomJob(userNum: number) {
+  const job = [];
+  // 1:citizen, 2:doctor, 3:police, 4:mafia, 5:reporter
+  switch (userNum) {
+    case 4:
+      job.push(5, 5, 5, 4);
+      break;
+    case 5:
+      job.push(1, 1, 2, 3, 4);
+      break;
+    case 6:
+      job.push(1, 1, 1, 2, 3, 4);
+      break;
+    case 7:
+      job.push(1, 1, 1, 2, 3, 4, 5);
+      break;
+    case 8:
+      job.push(1, 1, 1, 2, 3, 4, 4, 5);
+      break;
+    case 9:
+      job.push(1, 1, 1, 1, 2, 3, 4, 4, 5);
+      break;
+    case 10:
+      job.push(1, 1, 1, 1, 1, 2, 3, 4, 4, 5);
+      break;
   }
+
+  // job random 부여
+  const jobArr = job.sort(() => Math.random() - 0.5);
+  const playerJob = [];
+  for (let i = 0; i < jobArr.length; i++) {
+    switch (jobArr[i]) {
+      case 1:
+        playerJob.push('citizen');
+        break;
+      case 2:
+        playerJob.push('doctor');
+        break;
+      case 3:
+        playerJob.push('police');
+        break;
+      case 4:
+        playerJob.push('mafia');
+        break;
+      case 5:
+        playerJob.push('reporter');
+        break;
+      case 6:
+        playerJob.push('sniper');
+        break;
+    }
+  }
+
+  return playerJob;
 }

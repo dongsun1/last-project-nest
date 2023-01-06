@@ -1,4 +1,4 @@
-import { User, UserSchema } from './../schemas/user/user.schema';
+import { UserSchema } from './../schemas/user/user.schema';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Module } from '@nestjs/common';
 import { SocialController } from './social.controller';

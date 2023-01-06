@@ -21,6 +21,7 @@ async function bootstrap() {
 
   const httpServer = http.createServer(server);
   const httpsServer = https.createServer(httpsOptions, server);
+
   app.useWebSocketAdapter(new SocketIoAdapter(httpServer));
 
   httpServer.listen(3000, () => {

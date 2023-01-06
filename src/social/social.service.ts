@@ -1,5 +1,5 @@
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from './../schemas/user/user.schema';
+import { UserDocument } from './../schemas/user/user.schema';
 import { Model } from 'mongoose';
 import { Injectable, Query } from '@nestjs/common';
 import * as rp from 'request-promise';
@@ -13,7 +13,6 @@ export class SocialService {
     const naver = {
       clientid: `${process.env.CLIENT_ID}`, //REST API
       redirectUri: 'https://mafiyang.com/naverLogin/main',
-      // redirectUri: 'http://localhost:3000/naverLogin/main',
       client_secret: `${process.env.CLIENT_SECRET}`,
       state: 'login',
     };
@@ -26,15 +25,11 @@ export class SocialService {
     const naver = {
       clientid: `${process.env.CLIENT_ID}`, //REST API
       redirectUri: 'https://mafiyang.com/naverLogin/main',
-      // redirectUri: 'http://localhost:3000/naverLogin/main',
       client_secret: `${process.env.CLIENT_SECRET}`,
       state: 'login',
     };
 
     const { code, state } = query;
-    console.log('Naver service code-->', code); //undefined
-    console.log('Naver service state-->', state); //undefined
-
     const naver_api_url =
       'https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id=' +
       naver.clientid +
@@ -66,13 +61,9 @@ export class SocialService {
     const info_result = await rp.get(info_options);
     // string 형태로 값이 담기니 JSON 형식으로 parse를 해줘야 한다.
     const info_result_json = JSON.parse(info_result).response;
-    // console.log('info->', info_result_json);
     const userId = info_result_json.id;
     const userNick = info_result_json.nickname;
     const email = info_result_json.email;
-    // console.log('userId',userId)
-    // console.log('nickname',nickname)
-    // console.log('email',email)
 
     // 가입여부 중복확인
     const existUser = await this.userModel.findOne({ userId });
@@ -80,17 +71,15 @@ export class SocialService {
 
     if (!existUser) {
       const from = 'naver';
-      const userWin = 0;
-      const userLose = 0;
       const user = new this.userModel({ userId, userNick, email, from });
-      console.log('user-->', user);
       await this.userModel.create(user);
     }
 
     const loginUser = await this.userModel.findOne({ userId });
-    // const naverId = loginUser[0].userId
-    // const naverNick = loginUser[0].userNick
-    const token = jwt.sign({ userId: loginUser[0].userId }, `${process.env.KEY}`);
+    const token = jwt.sign(
+      { userId: loginUser[0].userId },
+      `${process.env.KEY}`,
+    );
     console.log('token-->', token);
     return {
       token,
@@ -103,10 +92,8 @@ export class SocialService {
   kakaoLogin() {
     const kakao = {
       clientid: `${process.env.CLIENTID}`, //REST API
-      // redirectUri: 'http://localhost:3000/main',
       redirectUri: 'https://www.mafiyang.com/main',
     };
-    // console.log('kakao Client_ID :', kakao.clientid) //undefined
     const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${kakao.clientid}&redirect_uri=${kakao.redirectUri}`;
     return { url: kakaoAuthURL };
   }
@@ -114,12 +101,10 @@ export class SocialService {
   async kakaoLoginMain(@Query() query) {
     const kakao = {
       clientid: `${process.env.CLIENTID}`, //REST API
-      // redirectUri: 'http://localhost:3000/main',
       redirectUri: 'https://www.mafiyang.com/main',
     };
 
     const { code } = query;
-    console.log('service code-->', code); //undefined
     const options = {
       url: 'https://kauth.kakao.com/oauth/token',
       method: 'POST',
@@ -146,13 +131,9 @@ export class SocialService {
       json: true,
     };
     const userInfo = await rp(options1);
-    // console.log('userInfo->', userInfo);
     const userId = userInfo.id;
     const userNick = userInfo.kakao_account.profile.nickname;
-    console.log('userId-->', userId);
-    console.log('userNick-->', userNick);
     const existUser = await this.userModel.findOne({ userId });
-    console.log('existUser-->', existUser);
 
     if (!existUser) {
       const from = 'kakao';
@@ -165,15 +146,14 @@ export class SocialService {
         userWin,
         userLose,
       });
-      console.log('user-->', user);
       await this.userModel.create(user);
     }
 
     const loginUser = await this.userModel.findOne({ userId });
-    console.log('loginUser-->', loginUser);
-    const token = jwt.sign({ userId: loginUser[0].userId }, `${process.env.KEY}`);
-    // console.log("jwtToken-->", token);
-    // console.log("User-->", token, userId, userNick);
+    const token = jwt.sign(
+      { userId: loginUser[0].userId },
+      `${process.env.KEY}`,
+    );
     return {
       token,
       userId,

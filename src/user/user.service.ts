@@ -358,8 +358,6 @@ export class UserService {
       },
     });
 
-    // console.log('transporter :', transporter)
-
     const emailOptions = {
       // 옵션값 설정
       from: '7707jo@naver.com',
@@ -430,42 +428,35 @@ export class UserService {
 
   // Profile 조회
   async getProfile(user: User) {
-    try{
+    try {
       const userId = user.userId;
-      // console.log('getProfile userId :', userId)
-      const userProfile = await this.userModel.findOne({ userId })
-      // console.log('userProfile :', userProfile)
-      var result = true;
-      return { result, profile : userProfile.userProfile }
-    } catch(e) {
-      var result = false;
-      var msg = '실패' 
-      return { result, msg }
+      const userProfile = await this.userModel.findOne({ userId });
+      const result = true;
+      return { result, profile: userProfile.userProfile };
+    } catch (e) {
+      const result = false;
+      const msg = '실패';
+      return { result, msg };
     }
-
   }
 
   // Profle Modify
   async postProfile(user: User, Profile: ProfileDto) {
-    try{
+    try {
       const userId = user.userId;
-      // console.log('Profile userId :', userId);
       const { userProfile } = Profile;
-      // console.log('userProfile :', userProfile);
       await this.userModel.findOneAndUpdate(
         { userId: userId },
         { $set: { userProfile: Number(userProfile) } },
         { new: true },
       );
-      let result = true;
-      let msg = '등록 성공'
-      return {result, msg};
-
-    }catch (error) {
-      console.log(error);
-      let result = false;
-      let msg = '등록 실패'
-      return {result, msg}
+      const result = true;
+      const msg = '등록 성공';
+      return { result, msg };
+    } catch (error) {
+      const result = false;
+      const msg = '등록 실패';
+      return { result, msg };
     }
   }
 }

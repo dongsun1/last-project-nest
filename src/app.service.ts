@@ -1,5 +1,4 @@
-import { HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 // export class HttpsRedirectMiddleware implements NestMiddleware {

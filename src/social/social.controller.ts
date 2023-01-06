@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Redirect, Res } from '@nestjs/common';
+import { Controller, Get, Query, Redirect } from '@nestjs/common';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { SocialService } from './social.service';
 
@@ -19,15 +19,12 @@ export class SocialController {
 
   @Redirect('https://docs.nestjs.com', 302)
   @Get('kakaoLogin')
-  kakaoLogin(@Res() res: any) {
-    // console.log('kakaoLogin Controller');
+  kakaoLogin() {
     return this.SocialService.kakaoLogin();
   }
 
   @Get('main')
   kakaoLoginMain(@Query() query: string) {
-    // const { code } = paginationQuery;
-    // console.log('controller code :', code);
     return this.SocialService.kakaoLoginMain(query);
   }
 }
